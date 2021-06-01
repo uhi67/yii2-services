@@ -3,6 +3,8 @@ modules:
     enabled:
         - \Helper\Soap
         - \Helper\SoapModule
+        - Asserts
+        - XmlAsserts
         - SOAP:
               depends: Yii2
               endpoint: "http://localhost/api"
