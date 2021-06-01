@@ -7,8 +7,8 @@ return [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
     ],
-    'vendorPath' => dirname(__DIR__) . '/../../vendor',
-    'controllerNamespace' => 'conquer\services\tests\app\controllers',
+    'vendorPath' => dirname(dirname(dirname(__DIR__))) . '/vendor',
+    'controllerNamespace' => 'uhi67\services\tests\app\controllers',
     'components' => [
         'urlManager' => [
             'enablePrettyUrl' => true,

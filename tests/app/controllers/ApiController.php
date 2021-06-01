@@ -1,17 +1,17 @@
-<?php
+<?php /** @noinspection PhpUnused */
+
 /**
  * @link https://github.com/borodulin/yii2-services
  * @license https://github.com/borodulin/yii2-services/blob/master/LICENSE.md
  */
 
-namespace conquer\services\tests\app\controllers;
+namespace uhi67\services\tests\app\controllers;
 
-use conquer\services\tests\app\models\SoapModel;
+use uhi67\services\WebServiceAction;
 use yii\web\Controller;
 
 /**
- * Class SoapController
- * @package conquer\services\tests\app\controllers
+ * Class ApiController
  */
 class ApiController extends Controller
 {
@@ -19,19 +19,23 @@ class ApiController extends Controller
 
     public function actions()
     {
+        /** @noinspection PhpUndefinedNamespaceInspection */
+        /** @noinspection PhpUndefinedClassInspection */
         return [
             'soap' => [
-                'class' => 'conquer\services\WebServiceAction',
+                'class' => WebServiceAction::class,
                 'classMap' => [
-                    'SoapModel' => SoapModel::className(),
+                    'SoapModel' => uhi67\services\tests\app\models\SoapModel::class,
                 ],
             ],
         ];
     }
     /**
-     * @param conquer\services\tests\app\models\SoapModel $myClass
+     * @param uhi67\services\tests\app\models\SoapModel $myClass
      * @return string
      * @soap
+     * @noinspection PhpUndefinedNamespaceInspection
+     * @noinspection PhpUndefinedClassInspection
      */
     public function soapTest($myClass)
     {

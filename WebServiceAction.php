@@ -4,10 +4,11 @@
  * @license https://github.com/borodulin/yii2-services/blob/master/LICENSE.md
  */
 
-namespace conquer\services;
+namespace uhi67\services;
 
 use Yii;
 use yii\base\Action;
+use yii\base\InvalidConfigException;
 use yii\helpers\Url;
 
 /**
@@ -89,8 +90,7 @@ class WebServiceAction extends Action
      * Runs the action.
      * If the GET parameter {@link serviceVar} exists, the action handle the remote method invocation.
      * If not, the action will serve WSDL content;
-     * @throws \ReflectionException
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function run()
     {
@@ -115,6 +115,7 @@ class WebServiceAction extends Action
         }
         if (isset($_GET[$this->serviceVar])) {
             $this->_service->run();
+            return null;
         } else {
             return $this->_service->renderWsdl();
         }

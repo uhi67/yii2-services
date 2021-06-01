@@ -1,0 +1,12 @@
+actor: SoapTester
+modules:
+    enabled:
+        - \Helper\Soap
+        - \Helper\SoapModule
+        - SOAP:
+              depends: Yii2
+              endpoint: "http://localhost/api"
+              schema: "http://localhost/api?ws=1"
+        - Yii2
+
+# Reference: https://codeception.com/docs/10-APITesting

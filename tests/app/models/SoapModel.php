@@ -1,16 +1,17 @@
-<?php
+<?php /** @noinspection PhpUnused */
+
 /**
  * @link https://github.com/borodulin/yii2-services
  * @license https://github.com/borodulin/yii2-services/blob/master/LICENSE.md
  */
 
-namespace conquer\services\tests\app\models;
+namespace uhi67\services\tests\app\models;
 
 use yii\base\Model;
 
 /**
  * Class SoapModel
- * @package conquer\services\tests\app\models
+ * @package app\models
  */
 class SoapModel extends Model
 {

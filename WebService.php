@@ -4,12 +4,16 @@
  * @license https://github.com/borodulin/yii2-services/blob/master/LICENSE.md
  */
 
-namespace conquer\services;
+namespace uhi67\services;
 
+use Exception;
+use ReflectionClass;
+use SoapServer;
 use Yii;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\Event;
+use yii\base\InvalidConfigException;
 use yii\web\Response;
 
 /**
@@ -52,7 +56,7 @@ class WebService extends Component
      */
     public $wsdlCacheDuration = 0;
     /**
-     * @var string the ID of the cache application component that is used to cache the generated WSDL.
+     * @var string|bool the ID of the cache application component that is used to cache the generated WSDL.
      * Defaults to 'cache' which refers to the primary cache application component.
      * Set this property to false if you want to disable caching WSDL.
      */
@@ -108,18 +112,19 @@ class WebService extends Component
         $this->provider = $provider;
         $this->wsdlUrl = $wsdlUrl;
         $this->serviceUrl = $serviceUrl;
-        $this->generatorConfig = WsdlGenerator::className();
+        $this->generatorConfig = WsdlGenerator::class;
         parent::__construct($config);
     }
 
     /**
      * The PHP error handler.
      * @param Event $event the PHP error event
-     * @throws \Exception
+     * @throws Exception
      */
     public function handleError($event)
     {
         $event->handled = true;
+        /** @noinspection PhpPossiblePolymorphicInvocationInspection */
         $message = $event->message;
         if (YII_DEBUG) {
             $trace = debug_backtrace();
@@ -127,13 +132,13 @@ class WebService extends Component
                 $message .= ' (' . $trace[2]['file'] . ':' . $trace[2]['line'] . ')';
             }
         }
-        throw new \Exception($message, self::SOAP_ERROR);
+        throw new Exception($message, self::SOAP_ERROR);
     }
 
     /**
      * Generates and displays the WSDL as defined by the provider.
      * @see generateWsdl
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function renderWsdl()
     {
@@ -150,7 +155,7 @@ class WebService extends Component
      * Generates the WSDL as defined by the provider.
      * The cached version may be used if the WSDL is found valid in cache.
      * @return string the generated WSDL
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      * @see wsdlCacheDuration
      */
     public function generateWsdl()
@@ -176,7 +181,6 @@ class WebService extends Component
 
     /**
      * Handles the web service request.
-     * @throws \ReflectionException
      */
     public function run()
     {
@@ -187,7 +191,7 @@ class WebService extends Component
         if (YII_DEBUG) {
             ini_set('soap.wsdl_cache_enabled', 0);
         }
-        $server = new \SoapServer($this->wsdlUrl, $this->getOptions());
+        $server = new SoapServer($this->wsdlUrl, $this->getOptions());
         //    \Yii::$app->on($name, $behavior)EventHandler('onError',array($this,'handleError'));
         try {
             if ($this->persistence !== null) {
@@ -224,7 +228,7 @@ class WebService extends Component
             } else {
                 $server->handle();
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // non-PHP error
             if ($e->getCode() !== self::SOAP_ERROR) {
                 // only log for non-PHP-error case because application's error handler already logs it
@@ -240,7 +244,7 @@ class WebService extends Component
             // http://bugs.php.net/bug.php?id=49513
             Yii::$app->state = Application::STATE_AFTER_REQUEST;
             Yii::$app->trigger(Application::EVENT_AFTER_REQUEST);
-            $reflect = new \ReflectionClass($e);
+            $reflect = new ReflectionClass($e);
             $server->fault($reflect->getShortName(), $message);
             exit(1);
         }

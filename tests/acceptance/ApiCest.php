@@ -1,7 +1,10 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
+namespace acceptance;
 
-class SoapCest
+use AcceptanceTester;
+
+class ApiCest
 {
     public function _before(AcceptanceTester $I)
     {

@@ -4,7 +4,7 @@
  * @license https://github.com/borodulin/yii2-services/blob/master/LICENSE.md
  */
 
-namespace conquer\services;
+namespace uhi67\services;
 
 /**
  * IWebServiceProvider interface may be implemented by Web service provider classes.
