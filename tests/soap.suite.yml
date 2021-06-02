@@ -6,9 +6,10 @@ modules:
         - Asserts
         - XmlAsserts
         - SOAP:
-              depends: Yii2
-              endpoint: "http://localhost/api"
-              schema: "http://localhost/api?ws=1"
-        - Yii2
+            depends: Yii2
+            endpoint: "http://localhost:8080/api?ws=1"
+            schema: "urn:uhi67/services/tests/app/controllers/ApiControllerwsdl"   # Namespace
+        - Yii2:
+            cleanup: false
 
 # Reference: https://codeception.com/docs/10-APITesting

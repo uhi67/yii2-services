@@ -2,7 +2,7 @@
   "name": "uhi67/services",
   "description": "Yii2 soap wsdl web services",
   "keywords": ["yii2", "extension", "wsdl", "services", "soap"],
-  "homepage": "https://github.com/borodulin/yii2-services",
+  "homepage": "https://github.com/uhi67/yii2-services",
   "type": "yii2-extension",
   "license": "BSD-3-Clause",
   "minimum-stability": "dev",
@@ -24,6 +24,7 @@
     "yiisoft/yii2": ">=2.0.6"
   },
   "require-dev": {
+    "ext-simplexml": "*",
     "yiisoft/yii2-debug": "~2.0.0",
     "yiisoft/yii2-faker": "~2.0.0",
     "codeception/codeception": "^4.1",

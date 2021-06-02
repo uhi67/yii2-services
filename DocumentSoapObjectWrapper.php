@@ -1,7 +1,7 @@
 <?php
 /**
- * @link https://github.com/borodulin/yii2-services
- * @license https://github.com/borodulin/yii2-services/blob/master/LICENSE.md
+ * @link https://github.com/uhi67/yii2-services
+ * @license https://github.com/uhi67/yii2-services/blob/master/LICENSE.md
  */
 
 namespace uhi67\services;

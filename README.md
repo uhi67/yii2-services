@@ -1,6 +1,6 @@
 Web Service for Yii2 framework
 =================
-[![Build Status](https://travis-ci.org/borodulin/yii2-services.svg?branch=master)](https://travis-ci.org/borodulin/yii2-services)
+[![Build Status](https://travis-ci.org/uhi67/yii2-services.svg?branch=master)](https://travis-ci.org/uhi67/yii2-services)
 
 ## Description
 
@@ -15,12 +15,12 @@ The preferred way to install this extension is through [composer](http://getcomp
 To install, either run
 
 ```
-$ php composer.phar require conquer/services "*"
+$ php composer.phar require uhi67/yii2-services "*"
 ```
 or add
 
 ```
-"conquer/services": "*"
+"uhi67/yii2-services": "*"
 ```
 
 to the ```require``` section of your `composer.json` file.
@@ -66,4 +66,4 @@ class MyClass
 
 ## License
 
-**conquer/services** is released under the BSD License. See the bundled `LICENSE.md` for details.
+**uhi67/yii2-services** is released under the BSD License. See the bundled `LICENSE.md` for details.

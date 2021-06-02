@@ -1,7 +1,7 @@
 <?php
 /**
- * @link https://github.com/borodulin/yii2-services
- * @license https://github.com/borodulin/yii2-services/blob/master/LICENSE.md
+ * @link https://github.com/uhi67/yii2-services
+ * @license https://github.com/uhi67/yii2-services/blob/master/LICENSE.md
  */
 
 namespace uhi67\services;
@@ -148,7 +148,8 @@ class WebService extends Component
         $response->format = Response::FORMAT_RAW;
         $response->headers->add('Content-Type', 'text/xml');
         //    header('Content-Length: '.(function_exists('mb_strlen') ? mb_strlen($wsdl,'8bit') : strlen($wsdl)));
-        return $wsdl;
+	    $response->content = $wsdl;
+        return $response;
     }
 
     /**
@@ -248,6 +249,8 @@ class WebService extends Component
             $server->fault($reflect->getShortName(), $message);
             exit(1);
         }
+        $response->content=$response->data;
+        return $response;
     }
 
     /**

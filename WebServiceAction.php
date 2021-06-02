@@ -1,7 +1,7 @@
 <?php
 /**
- * @link https://github.com/borodulin/yii2-services
- * @license https://github.com/borodulin/yii2-services/blob/master/LICENSE.md
+ * @link https://github.com/uhi67/yii2-services
+ * @license https://github.com/uhi67/yii2-services/blob/master/LICENSE.md
  */
 
 namespace uhi67\services;
@@ -105,6 +105,7 @@ class WebServiceAction extends Action
         if (($provider = $this->provider) === null) {
             $provider = $controller;
         }
+
         $this->_service = $this->createWebService($provider, $wsdlUrl, $serviceUrl);
 
         if (is_array($this->classMap)) {
@@ -114,8 +115,7 @@ class WebServiceAction extends Action
             $this->_service->$name = $value;
         }
         if (isset($_GET[$this->serviceVar])) {
-            $this->_service->run();
-            return null;
+            return $this->_service->run();
         } else {
             return $this->_service->renderWsdl();
         }

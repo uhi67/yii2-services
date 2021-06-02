@@ -1,8 +1,8 @@
 <?php /** @noinspection PhpUnused */
 
 /**
- * @link https://github.com/borodulin/yii2-services
- * @license https://github.com/borodulin/yii2-services/blob/master/LICENSE.md
+ * @link https://github.com/uhi67/yii2-services
+ * @license https://github.com/uhi67/yii2-services/blob/master/LICENSE.md
  */
 
 namespace uhi67\services;
@@ -364,7 +364,7 @@ class WsdlGenerator extends Component
         }
         $this->operations[$methodName] = [
             'doc' => $doc,
-            'headers' => isset($firstHeader) ? null : ['input' => [$methodName . 'Headers', $firstHeaderKey]],
+            'headers' => $firstHeader===null ? null : ['input' => [$methodName . 'Headers', $firstHeaderKey]],
         ];
     }
 
