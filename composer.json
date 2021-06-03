@@ -26,14 +26,12 @@
   },
   "require-dev": {
     "ext-simplexml": "*",
-    "ext-pcntl": "*",
-    "ext-posix": "*",
     "yiisoft/yii2-debug": "~2.0.0",
     "yiisoft/yii2-faker": "~2.0.0",
     "codeception/codeception": "^4.1",
     "guzzlehttp/guzzle": ">=4.1.4 <7.0",
     "codeception/module-rest": "^1.3",
-    "codeception/module-soap": "^1.0",
+    "codeception/module-soap": "dev-master",
     "codeception/module-yii2": "^1.1",
     "codeception/module-phpbrowser": "^1.0",
     "codeception/module-asserts": "^1.3",
@@ -52,6 +50,10 @@
     {
       "type": "git",
       "url": "git@bitbucket.org:uhi67/codecept-module-xmlasserts.git"
+    },
+    {
+      "type": "git",
+      "url": "git@github.com:uhi67/module-soap.git"
     }
   ]
 }
