@@ -49,12 +49,11 @@ class ApiController extends Controller
 	        ]
         ];
     }
+
     /**
-     * @param uhi67\services\tests\app\models\SoapModel $myClass
+     * @param string $a
      * @return string
      * @soap
-     * @noinspection PhpUndefinedNamespaceInspection
-     * @noinspection PhpUndefinedClassInspection
      */
     public function soapTest($a)
     {
@@ -62,16 +61,14 @@ class ApiController extends Controller
     }
 
 	/**
-	 * @param array $params
-	 * @return \stdClass
+	 * @param string $aaa
+	 * @return string
 	 * @soap
 	 */
-	public function mirror($params)
+	public function mirror($aaa)
 	{
-		throw new \Exception('mirror='.print_r($params,true));
-		$object = new \stdClass();
-		foreach($params as $key=>$value) $object->$key = $value;
-		return $object;
+		//throw new \Exception('mirror='.print_r($param,true));
+		return $aaa;
 	}
 
 	public function actionHello() {

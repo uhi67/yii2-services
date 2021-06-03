@@ -192,7 +192,14 @@ class WebService extends Component
         if (YII_DEBUG) {
             ini_set('soap.wsdl_cache_enabled', 0);
         }
-        $server = new SoapServer($this->wsdlUrl, $this->getOptions());
+        // Decide if we are testing (force non-wsdl-mode)
+        $test = Yii::$app->name=='test-api';
+        if($test) {
+            $server = new SoapServer(null, array_merge($this->getOptions(), ['uri' => $this->wsdlUrl]));
+        }
+        else {
+            $server = new SoapServer($this->wsdlUrl, $this->getOptions());
+        }
         //    \Yii::$app->on($name, $behavior)EventHandler('onError',array($this,'handleError'));
         try {
             if ($this->persistence !== null) {
@@ -221,13 +228,26 @@ class WebService extends Component
                 }
             }
 
+            $request = Yii::$app->request->rawBody;
+            // Precheck request (for easier recognition of request errors)
+            $parser = xml_parser_create("UTF-8");
+            if (!xml_parse($parser, $request, true)) {
+                $message = "Cannot parse request XML: ".
+                xml_error_string(xml_get_error_code($parser)).
+                " at line: ".xml_get_current_line_number($parser).
+                ", column: ".xml_get_current_column_number($parser);
+                Yii::debug($message. ' (' . $request . ')');
+                $server->fault("500", $message);
+                return;
+            }
+
             if ($provider instanceof IWebServiceProvider) {
                 if ($provider->beforeWebMethod($this)) {
-                    $server->handle();
+                    $server->handle($request);
                     $provider->afterWebMethod($this);
                 }
             } else {
-                $server->handle();
+                $server->handle($request);
             }
         } catch (Exception $e) {
             // non-PHP error
@@ -249,8 +269,6 @@ class WebService extends Component
             $server->fault($reflect->getShortName(), $message);
             exit(1);
         }
-        $response->content=$response->data;
-        return $response;
     }
 
     /**

@@ -21,10 +21,13 @@
     "php": ">=7.2",
     "ext-dom": "*",
     "ext-soap": "*",
+    "ext-xml": "*",
     "yiisoft/yii2": ">=2.0.6"
   },
   "require-dev": {
     "ext-simplexml": "*",
+    "ext-pcntl": "*",
+    "ext-posix": "*",
     "yiisoft/yii2-debug": "~2.0.0",
     "yiisoft/yii2-faker": "~2.0.0",
     "codeception/codeception": "^4.1",

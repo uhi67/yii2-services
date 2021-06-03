@@ -5,6 +5,9 @@ modules:
         - \Helper\SoapModule
         - Asserts
         - XmlAsserts
+#        - REST:
+#            url: "http://localhost:8080/api"
+#            depends: Yii2
         - SOAP:
             depends: Yii2
             endpoint: "http://localhost:8080/api?ws=1"

@@ -2,6 +2,7 @@
 
 return [
     'id' => 'test-api',
+    'name' => 'test-api',
     'basePath' => dirname(__DIR__),
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
