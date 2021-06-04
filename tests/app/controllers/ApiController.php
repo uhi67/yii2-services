@@ -62,6 +62,8 @@ class ApiController extends Controller
     }
 
 	/**
+     * Returns the value of the string argument.
+     *
 	 * @param string $aaa
 	 * @return string
 	 * @soap
@@ -116,16 +118,19 @@ class ApiController extends Controller
  */
 class MyObject {
     /**
+     * An integer argument
      * @var int $a
      * @soap
      */
     public $a;
     /**
+     * A boolean argument
      * @var bool $b
      * @soap
      */
     public $b;
     /**
+     * A string argument
      * @var string $c
      * @soap
      */

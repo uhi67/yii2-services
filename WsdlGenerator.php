@@ -266,7 +266,8 @@ class WsdlGenerator extends Component
             }
         }
 
-        $wsdl = $this->buildDOM($serviceUrl, $encoding)->saveXML();
+        $xslt = isset($_GET['doc']) ? '?xslt' : null;
+        $wsdl = $this->buildDOM($serviceUrl, $encoding, $xslt)->saveXML();
 
         if (isset($_GET['makedoc'])) {
             $this->buildHtmlDocs();
@@ -514,10 +515,11 @@ class WsdlGenerator extends Component
      * @param string $encoding encoding of the WSDL. Defaults to 'UTF-8'.
      * @return DOMDocument
      */
-    protected function buildDOM($serviceUrl, $encoding="UTF-8")
+    protected function buildDOM($serviceUrl, $encoding="UTF-8", $xslt=null)
     {
+        $pi = $xslt ? '<?xml-stylesheet type="text/xsl" href="'.$xslt.'"?>'."\n" : '';
         $xml = /** @lang */<<<XML
-<?xml version="1.0" encoding="$encoding"?>
+<?xml version="1.0" encoding="$encoding"?>$pi
 <definitions name="$this->serviceName" targetNamespace="$this->namespace"
     xmlns="http://schemas.xmlsoap.org/wsdl/"
     xmlns:tns="$this->namespace"
@@ -531,6 +533,7 @@ XML;
         $dom = new DOMDocument();
         $dom->formatOutput = true;
         $dom->loadXML($xml);
+
         $this->addTypes($dom);
 
         $this->addMessages($dom);

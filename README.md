@@ -12,7 +12,7 @@ Based on work of Qiang Xue <qiang.xue@gmail.com> and Andrey Borodulin
 Changes in version 1.4.2
 
 - corrections for codeception functional testing and some test examples
-
+- online API documentation with `?doc` query 
 
 ## Installation
 
