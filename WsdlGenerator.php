@@ -863,20 +863,24 @@ th, td{font-size: 12px;font-family: courier,monospace;padding: 3px;}
                 $c = 0;
                 foreach ($params as $param => $prop) {
                     ++$c;
+                    $type = (str_replace('xsd:', '', $prop[0]));
+                    $min = ($prop[3] == null ? '&nbsp;' : $prop[3]);
+                    $max = ($prop[4] == null ? '&nbsp;' : $prop[4]);
+                    $example = (trim($prop[5]) == '' ? '&nbsp;' : $prop[5]);
                     $html .= <<<HTML
 <tr>
     <td>$c</td>
     <td>$param</td>
-    <td>{(str_replace('xsd:', '', $prop[0]))}</td>
+    <td>$type</td>
     <td>$prop[2]</td>
-    <td>{($prop[3] == null ? '&nbsp;' : $prop[3])}</td>
-    <td>{($prop[4] == null ? '&nbsp;' : $prop[4])}</td>
+    <td>$min</td>
+    <td>$max</td>
     <td>$prop[1]</td>
-    <td>{(trim($prop[5]) == '' ? '&nbsp;' : $prop[5])}</td>
+    <td>$example</td>
 </tr>
 HTML;
                 }
-                $html .= '\n</table><br/>';
+                $html .= "\n</table><br/>";
             }
         } else {
             $html .= 'No complex data type found!';
