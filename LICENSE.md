@@ -1,4 +1,7 @@
 Copyright (c) 2015, Andrey Borodulin
+
+Modified by Uherkovich Péter 2021
+
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

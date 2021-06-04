@@ -5,8 +5,14 @@ Web Service for Yii2 framework
 ## Description
 
 WebService encapsulates SoapServer and provides a WSDL-based web service.
-
 Adaptation of Yii1 Web Services
+
+Based on work of Qiang Xue <qiang.xue@gmail.com> and Andrey Borodulin
+
+Changes in version 1.4.2
+
+- corrections for codeception functional testing and some test examples
+
 
 ## Installation
 
@@ -44,7 +50,7 @@ class SiteController extends \yii\web\Controller
         ];
     }
     /**
-     * @param app\controllers\MyClass $myClass
+     * @param \app\controllers\MyClass $myClass
      * @return string
      * @soap
      */
@@ -54,6 +60,10 @@ class SiteController extends \yii\web\Controller
     }
 }
 
+/**
+* Class MyClass
+ * @soap
+ */
 class MyClass
 {
     /**

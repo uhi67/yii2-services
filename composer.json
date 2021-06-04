@@ -22,7 +22,7 @@
     "ext-dom": "*",
     "ext-soap": "*",
     "ext-xml": "*",
-    "yiisoft/yii2": ">=2.0.6"
+    "yiisoft/yii2": ">=2.0.13"
   },
   "require-dev": {
     "ext-simplexml": "*",
