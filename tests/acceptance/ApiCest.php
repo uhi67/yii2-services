@@ -19,7 +19,7 @@ class ApiCest
     // tests
     public function tryToTest(AcceptanceTester $I)
     {
-        $I->sendGET('sample-api/soap');
+        $I->sendGET('sample-api');
         $I->seeResponseCodeIs(200);
     }
 
@@ -31,7 +31,7 @@ class ApiCest
 	 */
 	function mirrorWsTest(AcceptanceTester $I) {
 		$params = 13;
-		$wsdl = 'http://localhost:8080/sample-api/soap';
+		$wsdl = 'http://localhost:8080/sample-api';
 		$method = 'mirror';
 
 		$client = new SoapClient($wsdl, [

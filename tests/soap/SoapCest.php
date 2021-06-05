@@ -5,6 +5,7 @@ namespace soap;
 use Codeception\Exception\ModuleException;
 use Codeception\Module\XmlAsserts;
 use Codeception\Util\Soap;
+use DOMNodeList;
 use SoapTester;
 
 class SoapCest {
@@ -20,7 +21,7 @@ class SoapCest {
     // tests
     public function wsdlTest(SoapTester $I)
     {
-        $I->amOnPage('sample-api/soap');
+        $I->amOnPage('sample-api');
         $I->canSeeResponseCodeIs(200);
         $response = $I->grabPageSource();
         $I->assertXmlMatches('//wsdl:service', $response);
@@ -91,9 +92,9 @@ EOT;
 
         // Check Response object and namespace
         $responseNodeList = XmlAsserts::xmlEval("//*[local-name()='getObjectResponse']", $response);
-        $I->assertInstanceOf(\DOMNodeList::class, $responseNodeList);
+        $I->assertInstanceOf(DOMNodeList::class, $responseNodeList);
         $responseNode = $responseNodeList->item(0);
-        $I->assertInstanceOf(\DOMNodeList::class, $responseNodeList);
+        $I->assertInstanceOf(DOMNodeList::class, $responseNodeList);
         $I->assertEquals('ns1:getObjectResponse', $responseNode->nodeName);
         $I->assertEquals($namespace, $responseNode->namespaceURI);
 

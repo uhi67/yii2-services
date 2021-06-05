@@ -9,7 +9,7 @@ namespace uhi67\services\tests\app\controllers;
 
 use stdClass;
 use uhi67\services\WebServiceAction;
-use uhi67\services\WsdlGenerator;
+//use uhi67\services\WsdlGenerator;
 use yii\web\Controller;
 
 /**
@@ -28,17 +28,17 @@ class SampleApiController extends Controller
         /** @noinspection PhpUndefinedNamespaceInspection */
         /** @noinspection PhpUndefinedClassInspection */
         return [
-            'soap' => [
+            'index' => [
                 'class' => WebServiceAction::class,
 	            'serviceOptions' => [
 	                'actor' => 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl',
-		            'generatorConfig' =>[
-		            	'class' => WsdlGenerator::class,
-					    'operationBodyStyle' => [
-						    'use' => WsdlGenerator::USE_LITERAL,
-						    'encodingStyle' => 'http://schemas.xmlsoap.org/soap/encoding/',
-					    ],
-		            ]
+//		            'generatorConfig' =>[
+//		            	'class' => WsdlGenerator::class,
+//					    'operationBodyStyle' => [
+//						    'use' => WsdlGenerator::USE_LITERAL,
+//						    'encodingStyle' => 'http://schemas.xmlsoap.org/soap/encoding/',
+//					    ],
+//		            ]
 	            ],
                 'classMap' => [
                     'SoapModel' => uhi67\services\tests\app\models\SoapModel::class,
