@@ -20,7 +20,7 @@ class SoapCest {
     // tests
     public function wsdlTest(SoapTester $I)
     {
-        $I->amOnPage('api');
+        $I->amOnPage('sample-api/soap');
         $I->canSeeResponseCodeIs(200);
         $response = $I->grabPageSource();
         $I->assertXmlMatches('//wsdl:service', $response);
@@ -33,7 +33,7 @@ class SoapCest {
 	public function mirrorTest(SoapTester $I)
     {
         $soapEnvScheme = \Codeception\Module\SOAP::SCHEME_SOAP_ENVELOPE;
-	    $namespace = 'urn:uhi67/services/tests/app/controllers/ApiControllerwsdl';
+	    $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
 	    $method = 'mirror';
 	    $I->sendSoapRequest($method, '<aaa>x</aaa>');
 	    $expectedRequest = <<<EOT
@@ -83,12 +83,22 @@ EOT;
      */
     public function objectTest(SoapTester $I)
     {
+        $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
         $method = 'getObject';
         $I->sendSoapRequest($method, '<params><a>x</a><b>13</b><c>29</c></params>');
         $response = $I->grabSoapResponse(); // Only the corrected SOAP module delivers the result.
         codecept_debug('Response='.$response->saveXML());
-        $I->seeSoapResponseContainsXPath('//ns1:getObjectResponse');
 
+        // Check Response object and namespace
+        $responseNodeList = XmlAsserts::xmlEval("//*[local-name()='getObjectResponse']", $response);
+        $I->assertInstanceOf(\DOMNodeList::class, $responseNodeList);
+        $responseNode = $responseNodeList->item(0);
+        $I->assertInstanceOf(\DOMNodeList::class, $responseNodeList);
+        $I->assertEquals('ns1:getObjectResponse', $responseNode->nodeName);
+        $I->assertEquals($namespace, $responseNode->namespaceURI);
+
+        // Check response structure
+        $I->seeSoapResponseContainsXPath('//ns1:getObjectResponse');
         $expectedResult = /** @lang */ <<<EOT
 <return xsi:type="SOAP-ENC:Struct" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <getObjectResult xsi:type="SOAP-ENC:Struct">
@@ -96,8 +106,7 @@ EOT;
     </getObjectResult>
 </return>
 EOT;
-
-        $resultList = XmlAsserts::xmlEval('//ns1:getObjectResponse/return', $response, ['ns1'=>"http://localhost:8080/api/index"]);
+        $resultList = XmlAsserts::xmlEval('//ns1:getObjectResponse/return', $response, ['ns1'=>$namespace]);
         $I->assertCount(1, $resultList);
         $I->assertXmlStringEqualsXmlString($expectedResult, XmlAsserts::toXml($resultList[0]));
     }
@@ -108,7 +117,7 @@ EOT;
     public function object2Test(SoapTester $I)
     {
         $soapEnvScheme = \Codeception\Module\SOAP::SCHEME_SOAP_ENVELOPE;
-        $namespace = 'urn:uhi67/services/tests/app/controllers/ApiControllerwsdl';
+        $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
         $method = 'getObject2';
         /** @noinspection PhpUndefinedFieldInspection */
         $I->sendSoapRequest($method, Soap::request()->a->val(13)->parent()->b->val(true)->parent()->c->val('foo'));
@@ -140,7 +149,7 @@ EOT;
 </return>
 EOT;
 
-        $resultList = XmlAsserts::xmlEval('//ns1:getObject2Response/return', $response, ['ns1'=>"http://localhost:8080/api/index"]);
+        $resultList = XmlAsserts::xmlEval('//ns1:getObject2Response/return', $response, ['ns1'=>$namespace]);
         $I->assertCount(1, $resultList);
         $I->assertXmlStringEqualsXmlString($expectedResult, XmlAsserts::toXml($resultList[0]));
     }

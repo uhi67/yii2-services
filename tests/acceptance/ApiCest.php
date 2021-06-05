@@ -19,7 +19,7 @@ class ApiCest
     // tests
     public function tryToTest(AcceptanceTester $I)
     {
-        $I->sendGET('api/soap');
+        $I->sendGET('sample-api/soap');
         $I->seeResponseCodeIs(200);
     }
 
@@ -31,12 +31,13 @@ class ApiCest
 	 */
 	function mirrorWsTest(AcceptanceTester $I) {
 		$params = 13;
-		$wsdl = 'http://localhost:8080/api/soap';
+		$wsdl = 'http://localhost:8080/sample-api/soap';
 		$method = 'mirror';
 
 		$client = new SoapClient($wsdl, [
 			'cache_wsdl'=>WSDL_CACHE_NONE,
 			'cache_wsdl_ttl'=>0,
+//            'trace' => true,
 		]);
 
 		$soapResult = $client->__soapCall($method, ['parameters'=>$params], ['exceptions' => 1]);
@@ -45,6 +46,9 @@ class ApiCest
 		$I->assertFalse(is_soap_fault($soapResult));
         $expected = 13;
 		$I->assertEquals($expected, $soapResult);
+
+//		$response = $client->__getLastResponse();   // turn on trace first
+//        codecept_debug('Response='.print_r($response, true));
 
 	}
 }

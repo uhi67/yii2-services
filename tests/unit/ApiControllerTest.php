@@ -5,7 +5,7 @@ use Codeception\Module\XmlAsserts;
 use Codeception\Test\Unit;
 use Exception;
 use SoapServer;
-use uhi67\services\tests\app\controllers\ApiController;
+use uhi67\services\tests\app\controllers\SampleApiController;
 use UnitTester;
 use yii\base\InvalidConfigException;
 use yii\console\Application;
@@ -28,15 +28,16 @@ class ApiControllerTest extends Unit
     // tests
 
     /**
+     * Test raw soap server with the controller as provider class
+     *
      * @throws InvalidConfigException
      * @throws Exception
      */
     public function testRawSoapService()
     {
         $soapEnvScheme = "http://schemas.xmlsoap.org/soap/envelope/";
-        $namespace = 'urn:uhi67/services/tests/app/controllers/ApiControllerwsdl';
+        $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
         $method = 'mirror';
-        $endpoint = 'http://localhost:8080/api?ws=1';
         $request = <<<EOT
 <soapenv:Envelope xmlns:ns="$namespace" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 	<soapenv:Header xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"/>
@@ -47,11 +48,11 @@ class ApiControllerTest extends Unit
 	</soapenv:Body>
 </soapenv:Envelope>
 EOT;
-        $server = new SoapServer(null, ['uri'=>$endpoint]);
-        $server->setClass(ApiController::class);
+        $server = new SoapServer(null, ['uri'=>$namespace]);
+        $server->setClass(SampleApiController::class);
         $config = require dirname(__DIR__) . '/app/config/test-config.php';
         $application = new Application($config);
-        $provider = $application->createControllerByID('api');
+        $provider = $application->createControllerByID('sample-api');
 
         // Check request
         $parser = xml_parser_create("UTF-8");
@@ -67,12 +68,23 @@ EOT;
         ob_start();
         $server->handle($request);
         $response = ob_get_clean();
+        codecept_debug('Response='.$response);
 
+        // Check response structure
         $xml = XmlAsserts::toXml($response);
         $this->assertNotSame(false, $xml);
         $this->tester->assertXmlMatches('//soapenv:Envelope', $xml, ['soapenv'=>$soapEnvScheme], 'jajj');
         $this->tester->assertXmlMatches('//soapenv:Body', $xml, ['soapenv'=>$soapEnvScheme], 'jajj');
         $this->tester->assertXmlMatches("//ns1:{$method}Response", $xml, ['soapenv'=>$soapEnvScheme], 'jajj');
         $this->tester->assertXmlMatches("//return[@xsi:type='xsd:string']", $xml, ['xsi'=>"http://www.w3.org/2001/XMLSchema-instance"], 'jajj');
+
+        // Check Response namespace
+        $responseNodeList = XmlAsserts::xmlEval("//*[local-name()='{$method}Response']", $xml);
+        $I = $this->tester;
+        $I->assertInstanceOf(\DOMNodeList::class, $responseNodeList);
+        $responseNode = $responseNodeList->item(0);
+        $I->assertInstanceOf(\DOMNodeList::class, $responseNodeList);
+        $I->assertEquals("ns1:{$method}Response", $responseNode->nodeName);
+        $I->assertEquals($namespace, $responseNode->namespaceURI);
     }
 }

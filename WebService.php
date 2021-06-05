@@ -195,7 +195,8 @@ class WebService extends Component
         // Decide if we are testing (force non-wsdl-mode)
         $test = Yii::$app->name=='test-api';
         if($test) {
-            $server = new SoapServer(null, array_merge($this->getOptions(), ['uri' => $this->wsdlUrl]));
+            $actor = $this->actor ?: $this->wsdlUrl;
+            $server = new SoapServer(null, array_merge($this->getOptions(), ['uri' => $actor]));
         }
         else {
             $server = new SoapServer($this->wsdlUrl, $this->getOptions());

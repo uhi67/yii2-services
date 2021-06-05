@@ -13,13 +13,13 @@ use uhi67\services\WsdlGenerator;
 use yii\web\Controller;
 
 /**
- * Class ApiController
+ * Class SampleApiController
  *
- * Endpoint: http://localhost:8080/api?ws=1
- * WSDL: http://localhost:8080/api
- * Target namespace: urn:uhi67/services/tests/app/controllers/ApiControllerwsdl
+ * Endpoint: http://localhost:8080/sample-api?ws=1
+ * WSDL: http://localhost:8080/sample-api
+ * Target namespace: urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl
  */
-class ApiController extends Controller
+class SampleApiController extends Controller
 {
     public $enableCsrfValidation = false;
 
@@ -30,9 +30,8 @@ class ApiController extends Controller
         return [
             'soap' => [
                 'class' => WebServiceAction::class,
-	            'serviceUrl' => 'http://localhost:8080/api?ws=1',
-	            'wsdlUrl' => 'http://localhost:8080/api',
 	            'serviceOptions' => [
+	                'actor' => 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl',
 		            'generatorConfig' =>[
 		            	'class' => WsdlGenerator::class,
 					    'operationBodyStyle' => [
@@ -45,9 +44,6 @@ class ApiController extends Controller
                     'SoapModel' => uhi67\services\tests\app\models\SoapModel::class,
                 ],
             ],
-	        'index' => [
-		        'class' => WebServiceAction::class,
-	        ]
         ];
     }
 
