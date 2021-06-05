@@ -3,6 +3,7 @@ namespace unit;
 
 use Codeception\Module\XmlAsserts;
 use Codeception\Test\Unit;
+use DOMNodeList;
 use Exception;
 use SoapServer;
 use uhi67\services\tests\app\controllers\SampleApiController;
@@ -64,6 +65,7 @@ EOT;
                 ", column: ".xml_get_current_column_number($parser));
         }
 
+        // Set provider and handle request
         $server->setObject($provider);
         ob_start();
         $server->handle($request);
@@ -81,9 +83,9 @@ EOT;
         // Check Response namespace
         $responseNodeList = XmlAsserts::xmlEval("//*[local-name()='{$method}Response']", $xml);
         $I = $this->tester;
-        $I->assertInstanceOf(\DOMNodeList::class, $responseNodeList);
+        $I->assertInstanceOf(DOMNodeList::class, $responseNodeList);
         $responseNode = $responseNodeList->item(0);
-        $I->assertInstanceOf(\DOMNodeList::class, $responseNodeList);
+        $I->assertInstanceOf(DOMNodeList::class, $responseNodeList);
         $I->assertEquals("ns1:{$method}Response", $responseNode->nodeName);
         $I->assertEquals($namespace, $responseNode->namespaceURI);
     }

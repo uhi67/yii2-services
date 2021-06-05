@@ -12,7 +12,7 @@ return [
     'controllerNamespace' => 'uhi67\services\tests\app\controllers',
     'components' => [
         'urlManager' => [
-        	'baseUrl' => ':8080/',
+        	'baseUrl' => '',
             'enablePrettyUrl' => true,
             'showScriptName' => false,
         ],

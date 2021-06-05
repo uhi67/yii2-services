@@ -267,7 +267,8 @@ class WsdlGenerator extends Component
         }
 
         $xslt = isset($_GET['doc']) ? '?xslt' : null;
-        $wsdl = $this->buildDOM($serviceUrl, $encoding, $xslt)->saveXML();
+        $opName = $_GET['o'] ?? null;
+        $wsdl = $this->buildDOM($serviceUrl, $encoding, $xslt, $opName)->saveXML();
 
         if (isset($_GET['makedoc'])) {
             $this->buildHtmlDocs();
@@ -434,18 +435,28 @@ class WsdlGenerator extends Component
                         if (preg_match('/{(.+)}/', $comment, $attr)) {
                             $matches[3] = str_replace($attr[0], '', $matches[3]);
                         }
+
                         // extract PHPDoc @example
                         $example = '';
                         if (preg_match('/@example[:]?(.+)/mi', $comment, $match)) {
                             $example = trim($match[1]);
                         }
+
+                        // extract PHPDoc documentation
+                        if (preg_match('/^\/\*+\s*\*?\s*([^@]*)/', $comment, $mm)) {
+                            $doc = trim($mm[1], " \ \t\n\r\0\x0B*");
+                        } else {
+                            $doc = '';
+                        }
+
                         $this->types[$type]['properties'][$property->getName()] = [
                             $this->processType($matches[1]),
                             trim($matches[3]),
                             $attributes['nillable'],
                             $attributes['minOccurs'],
                             $attributes['maxOccurs'],
-                            $example
+                            $example,
+                            $doc
                         ]; // name => type, doc, nillable, minOccurs, maxOccurs, example
                     }
                 }
@@ -513,9 +524,11 @@ class WsdlGenerator extends Component
     /**
      * @param string $serviceUrl Web service URL
      * @param string $encoding encoding of the WSDL. Defaults to 'UTF-8'.
+     * @param string|null $xslt -- generate processing instruction with xslt name
+     * @param string|null $opName --
      * @return DOMDocument
      */
-    protected function buildDOM($serviceUrl, $encoding="UTF-8", $xslt=null)
+    protected function buildDOM($serviceUrl, $encoding="UTF-8", $xslt=null, $opName=null)
     {
         $pi = $xslt ? '<?xml-stylesheet type="text/xsl" href="'.$xslt.'"?>'."\n" : '';
         $xml = /** @lang */<<<XML
@@ -533,6 +546,15 @@ XML;
         $dom = new DOMDocument();
         $dom->formatOutput = true;
         $dom->loadXML($xml);
+
+        if($opName) {
+            $dom->documentElement->setAttribute('opName', $opName);
+            $dom->documentElement->setAttribute('uri', $serviceUrl);
+            $port = parse_url($serviceUrl, PHP_URL_PORT);
+            $scheme = parse_url($serviceUrl, PHP_URL_SCHEME);
+            $hostPort = $scheme=='http' && $port=='80' || $scheme=='https' && $port=='443' ? '' : ':'.$port;
+            $dom->documentElement->setAttribute('host', parse_url($serviceUrl, PHP_URL_HOST).$hostPort);
+        }
 
         $this->addTypes($dom);
 
@@ -555,6 +577,7 @@ XML;
         $types = $dom->createElement('wsdl:types');
         $schema = $dom->createElement('xsd:schema');
         $schema->setAttribute('targetNamespace', $this->namespace);
+
         foreach ($this->types as $phpType => $xmlType) {
             if (is_string($xmlType) && strrpos($xmlType, 'Array') !== strlen($xmlType) - 5) {
                 continue;  // simple type
@@ -627,6 +650,14 @@ XML;
                         }
                         $element->setAttribute('name', $name);
                         $element->setAttribute('type', $type[0]);
+
+                        // Documentation
+                        $annotation = $dom->createElement('xsd:annotation');
+                        $documentation = $dom->createElement('xsd:documentation');
+                        $documentation->textContent = $type[6];
+                        $annotation->appendChild($documentation);
+                        $element->appendChild($annotation);
+
                         $all->appendChild($element);
                     }
                     $complexType->appendChild($all);

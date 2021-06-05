@@ -115,12 +115,14 @@ class WebServiceAction extends Action
             $this->_service->$name = $value;
         }
         if(isset($_GET['xslt'])) {
+            $f = str_replace('..', '.', $_GET['f'] ?? 'wsdl.xslt');
             $response = Yii::$app->response;
-            $response->sendFile(__DIR__.'/xslt/wsdl.xslt');
+            $response->sendFile(__DIR__.'/xslt/'.$f);
             return $response;
         }
         elseif(isset($_GET[$this->serviceVar])) {
-            return $this->_service->run();
+            $this->_service->run();
+            return null;
         } else {
             return $this->_service->renderWsdl();
         }

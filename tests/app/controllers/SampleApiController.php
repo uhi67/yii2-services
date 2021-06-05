@@ -48,6 +48,8 @@ class SampleApiController extends Controller
     }
 
     /**
+     * Write the description of the operation into the phpdoc comment block of the controller method.
+     *
      * @param string $a
      * @return string
      * @soap
@@ -114,20 +116,24 @@ class SampleApiController extends Controller
  */
 class MyObject {
     /**
-     * An integer argument
-     * @var int $a
+     * An integer argument. Write structure element description into the comment block of the variable.
+     *
+     * @var int $a default 1
      * @soap
      */
-    public $a;
+    public $a=1;
     /**
      * A boolean argument
+     *
      * @var bool $b
      * @soap
      */
     public $b;
     /**
      * A string argument
+     *
      * @var string $c
+     * @example A sample example
      * @soap
      */
     public $c;

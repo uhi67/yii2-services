@@ -16,6 +16,7 @@
                 <title>
                     <xsl:value-of select="definitions/@name"/> Web Service
                 </title>
+                <link rel="stylesheet" href="?xslt&amp;f=wsdl.css"/>
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css"
                       integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x"
                       crossorigin="anonymous"/>
@@ -27,21 +28,24 @@
                       crossorigin="anonymous"/>
             </head>
             <body>
-                <h1>
-                    <xsl:value-of select="wsdl:definitions/@name"/>
-                </h1>
+                <header class="navbar navbar-dark">
+                    <div class="container">
+                        <h1><xsl:value-of select="wsdl:definitions/@name"/></h1>
+                    </div>
+                </header>
+                <div class="container">
+                    <xsl:apply-templates select="wsdl:definitions"/>
 
-                <xsl:apply-templates select="wsdl:definitions"/>
-
-                <!--suppress CheckTagEmptyBody -->
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
-                        integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
-                        crossorigin="anonymous"></script>
+                    <!--suppress CheckTagEmptyBody -->
+                    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+                            integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+                            crossorigin="anonymous"></script>
+                </div>
             </body>
         </html>
     </xsl:template>
 
-    <xsl:template match="wsdl:definitions">
+    <xsl:template match="wsdl:definitions[not(@opName)]">
         <h3>Service documentation</h3>
         <dl>
             <dt>Target namespace</dt>
@@ -49,10 +53,8 @@
                 <xsl:value-of select="@targetNamespace"/>
             </dd>
         </dl>
-
         <xsl:apply-templates select="wsdl:portType"/>
         <xsl:apply-templates select="wsdl:types"/>
-
     </xsl:template>
 
     <xsl:template match="wsdl:portType">
@@ -64,7 +66,7 @@
 
     <xsl:template match="wsdl:operation">
         <li>
-            <xsl:value-of select="@name"/>
+            <b><a href="?doc&amp;o={@name}"><xsl:value-of select="@name"/></a></b>
             <xsl:if test="wsdl:documentation!=''">
                 <p><i><xsl:value-of select="wsdl:documentation"/></i></p>
             </xsl:if>
@@ -74,6 +76,90 @@
     <xsl:template match="wsdl:types">
         <h2>Data types</h2>
         <xsl:apply-templates />
+    </xsl:template>
+
+    <xsl:template match="wsdl:definitions[@opName]">
+        <p>Back to the complete <a href="?doc">service documentation</a></p>
+        <xsl:apply-templates select="wsdl:portType/wsdl:operation[@name=current()/@opName]" mode="details"/>
+    </xsl:template>
+
+    <xsl:template match="wsdl:operation" mode="details">
+        <h2><xsl:value-of select="@name"/></h2>
+        <xsl:if test="wsdl:documentation!=''">
+            <p><i><xsl:value-of select="wsdl:documentation"/></i></p>
+        </xsl:if>
+        <xsl:apply-templates select="wsdl:input|wsdl:output"/>
+        <h3>Sample request</h3>
+        <pre>
+POST <xsl:value-of select="/wsdl:definitions/@uri"/> HTTP/1.1
+Host: <xsl:value-of select="/wsdl:definitions/@host"/>
+Content-Type: text/xml; charset=utf-8
+Content-Length: length
+
+&lt;soapenv:Envelope xmlns:ns="<xsl:value-of select="/wsdl:definitions/@targetNamespace"/>" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+    &lt;soapenv:Header xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"/>
+    &lt;soapenv:Body xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+        &lt;ns:<xsl:value-of select="@name"/><xsl:text>></xsl:text>
+            <xsl:apply-templates select="wsdl:input" mode="sample"/>
+        &lt;/ns:<xsl:value-of select="@name"/>>
+    &lt;/soapenv:Body>
+&lt;/soapenv:Envelope>
+        </pre>
+    </xsl:template>
+
+    <xsl:template match="wsdl:input">
+        <xsl:variable name="name" select="../@name" />
+        <h3>Input</h3>
+        <xsl:apply-templates select="/wsdl:definitions/wsdl:message[@name=concat($name, 'In')]"/>
+    </xsl:template>
+
+    <xsl:template match="wsdl:output">
+        <xsl:variable name="name" select="../@name" />
+        <h3>Output</h3>
+        <xsl:apply-templates select="/wsdl:definitions/wsdl:message[@name=concat($name, 'Out')]"/>
+    </xsl:template>
+
+    <xsl:template match="wsdl:message">
+        <table class="table table-striped table-bordered table-hover">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+            </tr>
+            <xsl:apply-templates select="wsdl:part" />
+        </table>
+    </xsl:template>
+
+    <xsl:template match="wsdl:part">
+        <tr>
+            <td><xsl:value-of select="@name" /></td>
+            <td><xsl:value-of select="@type" /></td>
+        </tr>
+    </xsl:template>
+
+    <xsl:template match="wsdl:input" mode="sample">
+        <xsl:variable name="name" select="../@name" />
+        <xsl:apply-templates select="/wsdl:definitions/wsdl:message[@name=concat($name, 'In')]" mode="sample"/>
+    </xsl:template>
+
+    <xsl:template match="wsdl:message" mode="sample">
+        <xsl:apply-templates select="wsdl:part" mode="sample"/>
+    </xsl:template>
+
+    <xsl:template match="wsdl:part" mode="sample">
+        <xsl:text>
+            &lt;</xsl:text><xsl:value-of select="@name" />><xsl:call-template name="sample"><xsl:with-param name="type" select="@type"/></xsl:call-template>&lt;/<xsl:value-of select="@name" /><xsl:text>></xsl:text>
+    </xsl:template>
+
+    <xsl:template name="sample">
+        <xsl:param name="type"/>
+        <xsl:choose>
+            <xsl:when test="substring-before($type, ':')='xsd'"><xsl:value-of select="substring-after($type, ':')"/></xsl:when>
+            <xsl:when test="substring-before($type, ':')='tns'">
+                <!-- recurse custom type-->
+                <xsl:value-of select="$type"/>
+            </xsl:when>
+            <xsl:otherwise><xsl:value-of select="$type"/></xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
     <xsl:template match="xsd:element">

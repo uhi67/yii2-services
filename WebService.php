@@ -50,7 +50,8 @@ class WebService extends Component
     /**
      * @var string the URL for the Web service. This is required by {@link generateWsdl()} and {@link renderWsdl()}.
      */
-    public $serviceUrl;
+    public
+        $serviceUrl;
     /**
      * @var integer number of seconds that the generated WSDL can remain valid in cache. Defaults to 0, meaning no caching.
      */
