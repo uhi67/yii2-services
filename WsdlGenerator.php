@@ -13,9 +13,7 @@ use DOMNode;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
-use Yii;
 use yii\base\Component;
-use yii\base\ExitException;
 
 /**
  * WsdlGenerator generates the WSDL for a given service class.
@@ -153,8 +151,8 @@ use yii\base\ExitException;
  * </pre>
  * In the example above, WSDL generator would inject under XML node &lt;xsd:User&gt; the code block defined by @soap-wsdl lines.
  *
- * By inserting into SOAP URL link the parameter "?makedoc", WSDL generator will output human-friendly overview of all complex data types rather than XML WSDL file.
- * Each complex type is described in a separate HTML table and recognizes also the '@example' PHPDoc tag. See {@link buildHtmlDocs()}.
+ * By inserting into SOAP URL link the parameter "?doc", WSDL generator will output human-friendly overview of all operations and complex data types rather than XML WSDL file.
+ * Each complex type is described in a separate HTML table and recognizes also the '@example' PHPDoc tag. See {@link xslt/wsdl.xslt}.
  *
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @package system.web.services
@@ -243,7 +241,6 @@ class WsdlGenerator extends Component
      * @param string $encoding encoding of the WSDL. Defaults to 'UTF-8'.
      * @return string the generated WSDL
      * @throws ReflectionException
-     * @throws ExitException
      */
     public function generateWsdl($className, $serviceUrl, $encoding = 'UTF-8')
     {
@@ -268,12 +265,7 @@ class WsdlGenerator extends Component
 
         $xslt = isset($_GET['doc']) ? '?xslt' : null;
         $opName = $_GET['o'] ?? null;
-        $wsdl = $this->buildDOM($serviceUrl, $encoding, $xslt, $opName)->saveXML();
-
-        if (isset($_GET['makedoc'])) {
-            $this->buildHtmlDocs();
-        }
-        return $wsdl;
+        return $this->buildDOM($serviceUrl, $encoding, $xslt, $opName)->saveXML();
     }
 
     /**
@@ -652,11 +644,20 @@ XML;
                         $element->setAttribute('type', $type[0]);
 
                         // Documentation
-                        $annotation = $dom->createElement('xsd:annotation');
-                        $documentation = $dom->createElement('xsd:documentation');
-                        $documentation->textContent = $type[6];
-                        $annotation->appendChild($documentation);
-                        $element->appendChild($annotation);
+                        if(isset($type[5]) || isset($type[6])) {
+                            $annotation = $dom->createElement('xsd:annotation');
+                            if(isset($type[6])) {
+                                $documentation = $dom->createElement('xsd:documentation');
+                                $documentation->textContent = $type[6];
+                                $annotation->appendChild($documentation);
+                            }
+                            if(isset($type[5])) {
+                                $appinfo = $dom->createElement('xsd:appinfo');
+                                $appinfo->textContent = $type[5];
+                                $annotation->appendChild($appinfo);
+                            }
+                            $element->appendChild($annotation);
+                        }
 
                         $all->appendChild($element);
                     }
@@ -846,86 +847,5 @@ XML;
         $port->appendChild($soapAddress);
         $service->appendChild($port);
         $dom->documentElement->appendChild($service);
-    }
-
-    /**
-     * Generate human friendly HTML documentation for complex data types.
-     * This method can be invoked either by inserting URL parameter "&makedoc" into URL link, e.g. "http://www.mydomain.com/soap/create?makedoc", or simply by calling from another script with argument $return=true.
-     *
-     * Each complex data type is described in a separate HTML table containing following columns:
-     * <ul>
-     * <li># - attribute ID</li>
-     * <li>Attribute - attribute name, e.g. firstname</li>
-     * <li>Type - attribute type, e.g. integer, date, tns:SoapPovCalculationResultArray</li>
-     * <li>Nill - true|false - whether the attribute is nillable</li>
-     * <li>Min - minimum number of occurrences</li>
-     * <li>Max - maximum number of occurrences</li>
-     * <li>Description - Detailed description of the attribute.</li>
-     * <li>Example - Attribute example value if provided via PHPDoc property @example.</li>
-     * </ul>
-     *
-     * @param bool $return If true, generated HTML output will be returned rather than directly sent to output buffer
-     * @return string
-     * @throws ExitException
-     * @noinspection HtmlDeprecatedAttribute
-     */
-    public function buildHtmlDocs($return = false)
-    {
-        $html = '<html lang="en"><head><title>WSDL Documentation</title>';
-        $html .= '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
-        $html .= '<style type="text/css">
-table{border-collapse: collapse;background-color: #DDDDDD;}
-tr{background-color: #FFFFFF;}
-th{background-color: #EEEEEE;}
-th, td{font-size: 12px;font-family: courier,monospace;padding: 3px;}
-</style>';
-        $html .= '</head><body>';
-        $html .= '<h2>WSDL documentation for service ' . $this->serviceName . '</h2>';
-        $html .= '<p>Generated on ' . date('d.m.Y H:i:s') . '</p>';
-        $html .= '<table border="0" cellspacing="1" cellpadding="1">';
-        $html .= '<tr><td>';
-
-        if (!empty($this->types)) {
-            foreach ($this->types as $object => $options) {
-                if (!is_array($options) || empty($options) || !is_array($options['properties']) || empty($options['properties'])) {
-                    continue;
-                }
-                $params = $options['properties'];
-                $html .= "\n\n<h3>Object: $object</h3>";
-                $html .= '<table border="1" cellspacing="1" cellpadding="1">';
-                $html .= '<tr><th>#</th><th>Attribute</th><th>Type</th><th>Nill</th><th>Min</th><th>Max</th><th>Description</th><th>Example</th></tr>';
-                $c = 0;
-                foreach ($params as $param => $prop) {
-                    ++$c;
-                    $type = (str_replace('xsd:', '', $prop[0]));
-                    $min = ($prop[3] == null ? '&nbsp;' : $prop[3]);
-                    $max = ($prop[4] == null ? '&nbsp;' : $prop[4]);
-                    $example = (trim($prop[5]) == '' ? '&nbsp;' : $prop[5]);
-                    $html .= <<<HTML
-<tr>
-    <td>$c</td>
-    <td>$param</td>
-    <td>$type</td>
-    <td>$prop[2]</td>
-    <td>$min</td>
-    <td>$max</td>
-    <td>$prop[1]</td>
-    <td>$example</td>
-</tr>
-HTML;
-                }
-                $html .= "\n</table><br/>";
-            }
-        } else {
-            $html .= 'No complex data type found!';
-        }
-        $html .= '</td></tr></table></body></html>';
-
-        if ($return) {
-            return $html;
-        }
-        echo $html;
-        Yii::$app->end(); // end the app to avoid conflict with text/xml header
-        return '';
     }
 }

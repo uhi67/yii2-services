@@ -188,6 +188,9 @@ Content-Length: length
             <td>
                 <xsl:value-of select="xsd:annotation/xsd:documentation" />
             </td>
+            <td>
+                <xsl:value-of select="xsd:annotation/xsd:appinfo" />
+            </td>
         </tr>
     </xsl:template>
 
@@ -200,6 +203,7 @@ Content-Length: length
                 <th>Type</th>
                 <th>Cardinality</th>
                 <th>Description</th>
+                <th>Example</th>
             </tr>
 
             <xsl:apply-templates select="xsd:sequence|xsd:complexContent|xsd:choice|xsd:all" />
