@@ -35,8 +35,8 @@ class SampleApiController extends Controller
 //		            'generatorConfig' =>[
 //		            	'class' => WsdlGenerator::class,
 //					    'operationBodyStyle' => [
-//						    'use' => WsdlGenerator::USE_LITERAL,
-//						    'encodingStyle' => 'http://schemas.xmlsoap.org/soap/encoding/',
+//						    'use' => WsdlGenerator::USE_LITERAL, // Default is USE_ENCODED
+//						    'encodingStyle' => 'http://schemas.xmlsoap.org/soap/encoding/', // Default is 'http://schemas.xmlsoap.org/soap/encoding/'
 //					    ],
 //		            ]
 	            ],
@@ -101,6 +101,19 @@ class SampleApiController extends Controller
         $object->a = (int)$a;
         $object->b = (bool)$b;
         $object->c = $c;
+        return $object;
+    }
+
+    /**
+     * @param array $a
+     * @return \stdClass -- input values in object form
+     * @soap
+     * @noinspection PhpUnnecessaryFullyQualifiedNameInspection  -- dont use aliases in SOAP phpdoc blocks!
+     */
+    public function getStdClass($a)
+    {
+        $object = new stdClass();
+        $object->arr = $a;
         return $object;
     }
 
