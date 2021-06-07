@@ -5,6 +5,7 @@ namespace soap;
 use Codeception\Exception\ModuleException;
 use Codeception\Module\XmlAsserts;
 use Codeception\Util\Soap;
+use Codeception\Util\XmlBuilder;
 use DOMNodeList;
 use SoapTester;
 
@@ -121,7 +122,10 @@ EOT;
         $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
         $method = 'getObject2';
         /** @noinspection PhpUndefinedFieldInspection */
-        $I->sendSoapRequest($method, Soap::request()->a->val(13)->parent()->b->val(true)->parent()->c->val('foo'));
+        /** @var XmlBuilder $requestBuilder */
+        $requestBuilder = Soap::request()->a->val(13)->parent()->b->val(true)->parent()->c->val('foo');
+        codecept_debug('Obj2-request='.$requestBuilder->getDom()->saveXML());
+        $I->sendSoapRequest($method, ['a'=>13, 'b'=>true, 'c'=>'foo']); // $requestBuilder is an equivalent method to pass multiple arguments.
 
         $expectedRequest = <<<EOT
 <soapenv:Envelope xmlns:ns="$namespace" xmlns:soapenv="$soapEnvScheme">
@@ -153,5 +157,57 @@ EOT;
         $resultList = XmlAsserts::xmlEval('//ns1:getObject2Response/return', $response, ['ns1'=>$namespace]);
         $I->assertCount(1, $resultList);
         $I->assertXmlStringEqualsXmlString($expectedResult, XmlAsserts::toXml($resultList[0]));
+    }
+
+    /**
+     * @throws ModuleException
+     */
+    public function getStdClassTest(SoapTester $I)
+    {
+        $soapEnvScheme = \Codeception\Module\SOAP::SCHEME_SOAP_ENVELOPE;
+        $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
+        $method = 'getStdClass';
+        $a = ['alma', true, 3];
+
+        $requestXml = \Codeception\Module\SOAP::soapEncode(['a'=>$a]);
+        $requestXml = /** @lang */'<a SOAP-ENC:arrayType="xsd:string[3]" xsi:type="SOAP-ENC:Array" 
+                    xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            >
+                <item xsi:type="xsd:string">alma</item>
+                <item xsi:type="xsd:string">banán</item>
+                <item xsi:type="xsd:string">citrom</item>
+            </a>';
+
+        $I->sendSoapRequest($method, $requestXml);
+        $request = $I->grabSoapRequest();
+        codecept_debug("Request=".$request->saveXML());
+        $response = $I->grabSoapResponse();
+        codecept_debug("Response=".$response->saveXML());
+
+        $expectedResponse = /** @lang */<<<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope 
+            xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" 
+            xmlns:ns1="urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl" 
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+            xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+>
+    <SOAP-ENV:Body>
+        <ns1:getStdClassResponse>
+            <return xsi:type="SOAP-ENC:Struct">
+                <arr SOAP-ENC:arrayType="xsd:string[3]" xsi:type="SOAP-ENC:Array">
+                    <item xsi:type="xsd:string">alma</item>
+                    <item xsi:type="xsd:string">banán</item>
+                    <item xsi:type="xsd:string">citrom</item>
+                </arr>
+            </return>
+        </ns1:getStdClassResponse>
+    </SOAP-ENV:Body></SOAP-ENV:Envelope>
+EOT;
+
+    $I->assertXmlStringEqualsXmlString($expectedResponse, $response);
     }
 }

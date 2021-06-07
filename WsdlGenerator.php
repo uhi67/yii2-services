@@ -16,7 +16,7 @@ use ReflectionMethod;
 use yii\base\Component;
 
 /**
- * WsdlGenerator generates the WSDL for a given service class.
+ * WsdlGenerator generates the WSDL (1.0) for a given service class.
  *
  * The WSDL generation is based on the doc comments found in the service class file.
  * In particular, it recognizes the '@soap' tag in the comment and extracts

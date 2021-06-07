@@ -8,6 +8,7 @@
 namespace uhi67\services\tests\app\controllers;
 
 use stdClass;
+use uhi67\services\tests\app\models\SoapModel;
 use uhi67\services\WebServiceAction;
 //use uhi67\services\WsdlGenerator;
 use yii\web\Controller;
@@ -25,8 +26,6 @@ class SampleApiController extends Controller
 
     public function actions()
     {
-        /** @noinspection PhpUndefinedNamespaceInspection */
-        /** @noinspection PhpUndefinedClassInspection */
         return [
             'index' => [
                 'class' => WebServiceAction::class,
@@ -41,7 +40,8 @@ class SampleApiController extends Controller
 //		            ]
 	            ],
                 'classMap' => [
-                    'SoapModel' => uhi67\services\tests\app\models\SoapModel::class,
+                    'SoapModel' => SoapModel::class,
+                    'MyObject1' => MyObject::class,
                 ],
             ],
         ];
