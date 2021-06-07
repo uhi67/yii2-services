@@ -5,6 +5,7 @@ namespace acceptance;
 use AcceptanceTester;
 use SoapClient;
 use SoapFault;
+use stdClass;
 
 class ApiCest
 {
@@ -61,7 +62,7 @@ class ApiCest
     function geStdClassWsTest(AcceptanceTester $I) {
         $wsdl = 'http://localhost:8080/sample-api';
         $method = 'getStdClass';
-        $arrayValue = ['alma', 'banán', 'citrom'];
+        $arrayValue = [13, true, 'citrom'];
 
         $client = new SoapClient($wsdl, [
             'cache_wsdl'=>WSDL_CACHE_NONE,
@@ -79,11 +80,12 @@ class ApiCest
 
         codecept_debug('Result='.print_r($soapResult, true));
 
-        $expected = new \stdClass();
+        $expected = new stdClass();
         $expected->arr = $arrayValue;
         $I->assertEquals($expected, $soapResult);
 
-        $expectedRequest = <<<EOT
+        /** @noinspection PhpUnusedLocalVariableInspection */
+        $expectedRequest = /** @lang */<<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <SOAP-ENV:Envelope 
         xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" 
@@ -105,7 +107,8 @@ class ApiCest
 </SOAP-ENV:Envelope>
 EOT;
 
-        $expectedResponse = <<<EOT
+        /** @noinspection PhpUnusedLocalVariableInspection */
+        $expectedResponse = /* @lang */ <<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <SOAP-ENV:Envelope 
         xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" 

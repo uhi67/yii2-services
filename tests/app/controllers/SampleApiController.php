@@ -105,7 +105,7 @@ class SampleApiController extends Controller
     }
 
     /**
-     * @param array $a
+     * @param mixed[] $a
      * @return \stdClass -- input values in object form
      * @soap
      * @noinspection PhpUnnecessaryFullyQualifiedNameInspection  -- dont use aliases in SOAP phpdoc blocks!
