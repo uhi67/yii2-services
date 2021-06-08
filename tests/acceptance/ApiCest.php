@@ -59,7 +59,7 @@ class ApiCest
      *
      * @throws SoapFault
      */
-    function geStdClassWsTest(AcceptanceTester $I) {
+    function getStdClassWsTest(AcceptanceTester $I) {
         $wsdl = 'http://localhost:8080/sample-api';
         $method = 'getStdClass';
         $arrayValue = [13, true, 'citrom'];

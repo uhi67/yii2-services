@@ -105,6 +105,8 @@ class SampleApiController extends Controller
     }
 
     /**
+     * Mirrors input array in a field of an stdClass.
+     *
      * @param mixed[] $a
      * @return \stdClass -- input values in object form
      * @soap
