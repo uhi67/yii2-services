@@ -14,5 +14,3 @@ modules:
         Yii2:
             configFile: 'tests/app/config/test-config.php'
             cleanup: false
-#        PhpBrowser:
-#            url: 'http://localhost/api/soap/departments'

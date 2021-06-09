@@ -103,9 +103,7 @@ EOT;
         $I->seeSoapResponseContainsXPath('//ns1:getObjectResponse');
         $expectedResult = /** @lang */ <<<EOT
 <return xsi:type="SOAP-ENC:Struct" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <getObjectResult xsi:type="SOAP-ENC:Struct">
-        <a xsi:type="xsd:string">x</a><b xsi:type="xsd:string">13</b><c xsi:type="xsd:string">29</c>
-    </getObjectResult>
+    <a xsi:type="xsd:string">x</a><b xsi:type="xsd:string">13</b><c xsi:type="xsd:string">29</c>
 </return>
 EOT;
         $resultList = XmlAsserts::xmlEval('//ns1:getObjectResponse/return', $response, ['ns1'=>$namespace]);

@@ -80,10 +80,7 @@ class SampleApiController extends Controller
     public function getObject($params)
     {
         $object = new stdClass();
-        $object_result = new stdClass();
-        foreach($params as $name=>$value) $object_result->$name = $value;
-        $result_name = __FUNCTION__.'Result';
-        $object->$result_name = $object_result;
+        foreach($params as $name=>$value) $object->$name = $value;
         return $object;
     }
 

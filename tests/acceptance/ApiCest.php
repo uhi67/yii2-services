@@ -20,8 +20,11 @@ class ApiCest
     // tests
     public function tryToTest(AcceptanceTester $I)
     {
-        $I->sendGET('sample-api');
+        $I->amOnPage('sample-api');
         $I->seeResponseCodeIs(200);
+        $I->seeInSource('<definitions');
+        $I->seeInSource('<wsdl:operation name="getObject">');
+        $I->seeInSource('<wsdl:operation name="mirror">');
     }
 
 	/**
@@ -70,7 +73,7 @@ class ApiCest
             'trace' => true,
         ]);
 
-        $soapResult = $client->__soapCall($method, ['parameters'=>$arrayValue], ['exceptions' => 0]);
+        $soapResult = $client->__soapCall($method, [$arrayValue], ['exceptions' => 0]);
         $request = $client->__getLastRequest();   // turn on trace first
         codecept_debug('Request='.print_r($request, true));
 
@@ -132,4 +135,24 @@ EOT;
 EOT;
 
     }
+
+
+    function getObjectTest(AcceptanceTester $I) {
+        $wsdl = 'http://localhost:8080/sample-api';
+        $method = 'getObject';
+        $arrayValue = ['a'=>13, 'b'=>true, 'c'=>'citrom'];
+
+        $client = new SoapClient($wsdl, [
+            'cache_wsdl'=>WSDL_CACHE_NONE,
+            'cache_wsdl_ttl'=>0,
+            'trace' => true,
+        ]);
+        $soapResult = $client->__soapCall($method, [$arrayValue], ['exceptions' => 0]);
+        codecept_debug('Request='.print_r($client->__getLastRequest(), true));
+        codecept_debug('Response='.print_r($client->__getLastResponse(), true));
+        codecept_debug('Result='.print_r($soapResult, true));
+        $I->assertEquals((object)$arrayValue, $soapResult);
+
+    }
+
 }
