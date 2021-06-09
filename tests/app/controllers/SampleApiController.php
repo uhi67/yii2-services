@@ -41,7 +41,7 @@ class SampleApiController extends Controller
 	            ],
                 'classMap' => [
                     'SoapModel' => SoapModel::class,
-                    'MyObject1' => MyObject::class,
+                    'MyObject' => MyObject::class,
                 ],
             ],
         ];
@@ -74,21 +74,21 @@ class SampleApiController extends Controller
 
     /**
      * @param array $params -- associative array
-     * @return stdClass -- input array in object form
+     * @return object -- use object instead of stdClass
      * @soap
      */
     public function getObject($params)
     {
-        $object = new stdClass();
-        foreach($params as $name=>$value) $object->$name = $value;
-        return $object;
+        $object_result = new stdClass();
+        foreach($params as $name=>$value) $object_result->$name = $value;
+        return $object_result;
     }
 
     /**
      * @param int $a
      * @param bool $b
      * @param string $c
-     * @return \uhi67\services\tests\app\controllers\MyObject -- input values in object form
+     * @return \uhi67\services\tests\app\controllers\MyObject -- returns the input values in a custom object
      * @soap
      * @noinspection PhpUnnecessaryFullyQualifiedNameInspection  -- dont use aliases in SOAP phpdoc blocks!
      */
@@ -105,15 +105,23 @@ class SampleApiController extends Controller
      * Mirrors input array in a field of an stdClass.
      *
      * @param mixed[] $a
-     * @return \stdClass -- input values in object form
+     * @return object
      * @soap
-     * @noinspection PhpUnnecessaryFullyQualifiedNameInspection  -- dont use aliases in SOAP phpdoc blocks!
      */
     public function getStdClass($a)
     {
         $object = new stdClass();
         $object->arr = $a;
-        return $object;
+        return (object)['arr'=>$a];
+    }
+
+    /**
+     * Parameters and output wrapped in .net style
+     * @param mixed[] $params -- single array parameter holding all user parameters
+     * @return object -- result is wrapped into the functionResult field of a stdClass object.
+     */
+    public function getDotNetObject($params) {
+        return (object)[__FUNCTION__.'Result'=>(object)$params];
     }
 
     public function actionHello()

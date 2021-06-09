@@ -193,11 +193,13 @@ class WebService extends Component
         if (YII_DEBUG) {
             ini_set('soap.wsdl_cache_enabled', 0);
         }
-        // Decide if we are testing (force non-wsdl-mode)
+
+        // Decide if we are testing (prebuild wsdl without webserver)
         $test = Yii::$app->name=='test-api';
         if($test) {
-            $actor = $this->actor ?: $this->wsdlUrl;
-            $server = new SoapServer(null, array_merge($this->getOptions(), ['uri' => $actor]));
+            $wsdlFile = __DIR__.'/tests/_output/wsdl-'.md5($this->wsdlUrl).'.xml';
+            file_put_contents($wsdlFile, $this->generateWsdl());
+            $server = new SoapServer($wsdlFile, $this->getOptions());
         }
         else {
             $server = new SoapServer($this->wsdlUrl, $this->getOptions());

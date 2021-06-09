@@ -9,8 +9,11 @@ use stdClass;
 
 class ApiCest
 {
-    public function _before(AcceptanceTester $I)
+    public $wsdl;
+
+    public function _before()
     {
+        $this->wsdl = 'http://localhost:8080/sample-api';
     }
 
     public function _after(AcceptanceTester $I)
@@ -35,10 +38,9 @@ class ApiCest
 	 */
 	function mirrorWsTest(AcceptanceTester $I) {
 		$param = 13;
-		$wsdl = 'http://localhost:8080/sample-api';
 		$method = 'mirror';
 
-		$client = new SoapClient($wsdl, [
+		$client = new SoapClient($this->wsdl, [
 			'cache_wsdl'=>WSDL_CACHE_NONE,
 			'cache_wsdl_ttl'=>0,
 //            'trace' => true,
@@ -58,16 +60,15 @@ class ApiCest
 
     /**
      * Acceptance test runs soap call thru a web server.
-     * Please start web server on port 8080, e.g. `php tests/app/yii serve`
+     * Please start web server, e.g. `php tests/app/yii serve`
      *
      * @throws SoapFault
      */
     function getStdClassWsTest(AcceptanceTester $I) {
-        $wsdl = 'http://localhost:8080/sample-api';
         $method = 'getStdClass';
         $arrayValue = [13, true, 'citrom'];
 
-        $client = new SoapClient($wsdl, [
+        $client = new SoapClient($this->wsdl, [
             'cache_wsdl'=>WSDL_CACHE_NONE,
             'cache_wsdl_ttl'=>0,
             'trace' => true,
@@ -138,11 +139,11 @@ EOT;
 
 
     function getObjectTest(AcceptanceTester $I) {
-        $wsdl = 'http://localhost:8080/sample-api';
         $method = 'getObject';
         $arrayValue = ['a'=>13, 'b'=>true, 'c'=>'citrom'];
 
-        $client = new SoapClient($wsdl, [
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $client = new SoapClient($this->wsdl, [
             'cache_wsdl'=>WSDL_CACHE_NONE,
             'cache_wsdl_ttl'=>0,
             'trace' => true,

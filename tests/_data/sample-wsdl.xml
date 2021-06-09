@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--suppress XmlUnusedNamespaceDeclaration -->
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="urn:app/controllers/api/soap/SampleSoapControllerwsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap-enc="http://schemas.xmlsoap.org/soap/encoding/" name="SampleSoapController" targetNamespace="urn:app/controllers/api/soap/SampleSoapControllerwsdl">
+    <wsdl:types>
+        <xsd:schema targetNamespace="urn:app/controllers/api/soap/SampleSoapControllerwsdl">
+            <xsd:complexType name="stdClass">
+                <xsd:all/>
+            </xsd:complexType>
+        </xsd:schema>
+    </wsdl:types>
+    <wsdl:message name="getObjectIn">
+        <wsdl:part name="params" type="soap-enc:Array"/>
+    </wsdl:message>
+    <wsdl:message name="getObjectOut">
+        <wsdl:part name="return" type="tns:stdClass"/>
+    </wsdl:message>
+    <wsdl:portType name="SampleSoapControllerPortType">
+        <wsdl:operation name="getObject">
+            <wsdl:documentation/>
+            <wsdl:input message="tns:getObjectIn"/>
+            <wsdl:output message="tns:getObjectOut"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="SampleSoapControllerBinding" type="tns:SampleSoapControllerPortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="getObject">
+            <soap:operation soapAction="urn:app/controllers/api/soap/SampleSoapControllerwsdl#getObject" style="rpc"/>
+            <wsdl:input>
+                <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:app/controllers/api/soap/SampleSoapControllerwsdl"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="encoded" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:app/controllers/api/soap/SampleSoapControllerwsdl"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="SampleSoapControllerService">
+        <wsdl:port name="SampleSoapControllerPort" binding="tns:SampleSoapControllerBinding">
+            <soap:address location="http://central.test/api/soap/sample-soap/index?ws=1"/>
+        </wsdl:port>
+    </wsdl:service>
+</definitions>

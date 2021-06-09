@@ -5,3 +5,5 @@ defined('YII_APP_BASE_PATH') or define('YII_APP_BASE_PATH', dirname(__DIR__) . '
 
 require_once dirname(__DIR__) . '/vendor/yiisoft/yii2/Yii.php';
 require_once dirname(__DIR__) . '/vendor/autoload.php';
+
+ini_set('soap.wsdl_cache_enabled', 0);
