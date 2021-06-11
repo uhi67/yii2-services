@@ -10,6 +10,7 @@ use Yii;
 use yii\base\Action;
 use yii\base\InvalidConfigException;
 use yii\helpers\Url;
+use yii\web\Request;
 
 /**
  * WebServiceAction implements an action that provides Web services.
@@ -94,7 +95,8 @@ class WebServiceAction extends Action
      */
     public function run()
     {
-        $hostInfo = Yii::$app->getRequest()->getHostInfo();
+        $request = Yii::$app->getRequest();
+        $hostInfo = $request instanceof  Request ? $request->getHostInfo() : 'http://localhost';
         $controller = $this->controller;
         if (($serviceUrl = $this->serviceUrl) === null) {
             $serviceUrl = $hostInfo . Url::toRoute([$this->getUniqueId(), $this->serviceVar => 1]);

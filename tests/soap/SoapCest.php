@@ -3,17 +3,27 @@
 namespace soap;
 
 use Codeception\Exception\ModuleException;
+use Codeception\Module\SOAP;
 use Codeception\Module\XmlAsserts;
-use Codeception\Util\Soap;
 use Codeception\Util\XmlBuilder;
 use DOMNodeList;
+use SoapFault;
 use SoapTester;
+use SoapVar;
+use uhi67\soapHelper\SoapClientDry;
 
 class SoapCest {
-    public $server;
+    public $wsdlFile;
 
     public function _before(SoapTester $I)
     {
+        $this->wsdlFile = null;
+        $I->amOnPage('sample-api');
+        $wsdl = $I->grabPageSource();
+        if($wsdl) {
+            $this->wsdlFile = dirname(__DIR__). '/_output/wsdl-cest-'.md5(__CLASS__).'.xml';
+            file_put_contents($this->wsdlFile, XmlAsserts::toXml($wsdl)->saveXml());
+        }
     }
 
     public function _after() {
@@ -34,10 +44,10 @@ class SoapCest {
 	 */
 	public function mirrorTest(SoapTester $I)
     {
-        $soapEnvScheme = \Codeception\Module\SOAP::SCHEME_SOAP_ENVELOPE;
+        $soapEnvScheme = SOAP::SCHEME_SOAP_ENVELOPE;
 	    $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
 	    $method = 'mirror';
-	    $I->sendSoapRequest($method, '<aaa>x</aaa>');
+	    $I->sendSoapRequest($method, '<root><aaa>x</aaa></root>');
 	    $expectedRequest = <<<EOT
 <soapenv:Envelope xmlns:soapenv="$soapEnvScheme">
 	<soapenv:Header/>
@@ -87,7 +97,7 @@ EOT;
     {
         $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
         $method = 'getObject';
-        $I->sendSoapRequest($method, '<params><a>x</a><b>13</b><c>29</c></params>');
+        $I->sendSoapRequest($method, '<root><params><a>x</a><b>13</b><c>29</c></params></root>');
         $response = $I->grabSoapResponse(); // Only the corrected SOAP module delivers the result.
         codecept_debug('Response='.$response->saveXML());
 
@@ -116,26 +126,22 @@ EOT;
      */
     public function object2Test(SoapTester $I)
     {
-        $soapEnvScheme = \Codeception\Module\SOAP::SCHEME_SOAP_ENVELOPE;
+        $soapEnvScheme = SOAP::SCHEME_SOAP_ENVELOPE;
         $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
         $method = 'getObject2';
-        /** @noinspection PhpUndefinedFieldInspection */
         /** @var XmlBuilder $requestBuilder */
-        $requestBuilder = Soap::request()->a->val(13)->parent()->b->val(true)->parent()->c->val('foo');
-        codecept_debug('Obj2-request='.$requestBuilder->getDom()->saveXML());
-        $I->sendSoapRequest($method, ['a'=>13, 'b'=>true, 'c'=>'foo']); // $requestBuilder is an equivalent method to pass multiple arguments.
+        $I->sendSoapRequest($method, ['a'=>13, 'b'=>true, 'c'=>'foo'], $this->wsdlFile); // pass arguments as associative array with argument names
 
-        $expectedRequest = /* @lang XML */<<<EOT
-<soapenv:Envelope xmlns:soapenv="$soapEnvScheme">
-	<soapenv:Header/>
-	<soapenv:Body>
-		<ns:$method xmlns:ns="$namespace" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        $expectedRequest = /* @lang XMLs */<<<EOT
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="$soapEnvScheme" xmlns:ns1="$namespace" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<SOAP-ENV:Body>
+		<ns1:$method>
             <a xsi:type="xsd:int">13</a>
             <b xsi:type="xsd:boolean">true</b>
             <c xsi:type="xsd:string">foo</c>
-		</ns:$method>
-	</soapenv:Body>
-</soapenv:Envelope>
+		</ns1:$method>
+	</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
 EOT;
         $request = $I->grabSoapRequest();
         $I->assertXmlStringEqualsXmlString($expectedRequest, $request->saveXML());
@@ -145,7 +151,7 @@ EOT;
         $I->seeSoapResponseContainsXPath('//ns1:getObject2Response');
 
         $expectedResult = /** @lang */<<<EOT
-<return xsi:type="SOAP-ENC:Struct" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<return xsi:type="ns1:MyObject" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <a xsi:type="xsd:int">13</a>
     <b xsi:type="xsd:boolean">true</b>
     <c xsi:type="xsd:string">foo</c>
@@ -162,13 +168,13 @@ EOT;
      */
     public function getStdClassTest(SoapTester $I)
     {
-        $soapEnvScheme = \Codeception\Module\SOAP::SCHEME_SOAP_ENVELOPE;
-        $soapEncoding = \Codeception\Module\SOAP::SCHEME_SOAP_ENCODING;
+        $soapEnvScheme = SOAP::SCHEME_SOAP_ENVELOPE;
+        $soapEncoding = SOAP::SCHEME_SOAP_ENCODING;
         $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
         $method = 'getStdClass';
         $a = ['alma', true, 3];
 
-        $I->sendSoapRequest($method, ['a'=>$a]);
+        $I->sendSoapRequest($method, ['a'=>$a], $this->wsdlFile);
 
         $response = $I->grabSoapResponse();
         codecept_debug("Response=".$response->saveXML());
@@ -186,10 +192,10 @@ EOT;
     <SOAP-ENV:Body>
         <ns1:getStdClassResponse>
             <return xsi:type="SOAP-ENC:Struct">
-                <arr SOAP-ENC:arrayType="xsd:string[3]" xsi:type="SOAP-ENC:Array">
+                <arr SOAP-ENC:arrayType="xsd:ur-type[3]" xsi:type="SOAP-ENC:Array">
                     <item xsi:type="xsd:string">alma</item>
-                    <item xsi:type="xsd:string">true</item>
-                    <item xsi:type="xsd:string">3</item>
+                    <item xsi:type="xsd:boolean">true</item>
+                    <item xsi:type="xsd:int">3</item>
                 </arr>
             </return>
         </ns1:getStdClassResponse>
@@ -202,40 +208,36 @@ EOT;
 
     /**
      * @throws ModuleException
+     * @throws SoapFault
      */
-    public function passStdClassTest(SoapTester $I)
+    public function getDotNetObjectTest(SoapTester $I)
     {
         $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
-        $method = 'getStdClass';
-        $a = [['alma', true, 3], 'foo', (object)['a'=>1, 'b'=>2, 'c'=>3]];
+        $method = 'getDotNetObject';
+        $parameters = ['params'=>new SoapVar(['aa'=>23, 'bb'=>'banán', 'cc'=>[77,88,99]], SOAP_ENC_OBJECT)];
 
-        $requestXml = \Codeception\Module\SOAP::soapEncode(['a'=>$a]);
-        $expectedRequest = /** @lang */ <<<EOT
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-    <soapenv:Header />
-    <soapenv:Body>
-        <ns:getStdClass xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns="$namespace">
-            <item xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="SOAP-ENC:Struct">
-                <a xsi:type="SOAP-ENC:Array" SOAP-ENC:arrayType="xsd:anyType[3]">
-                    <item xsi:type="SOAP-ENC:Array" SOAP-ENC:arrayType="xsd:anyType[3]">
-                        <item xsi:type="xsd:string">alma</item>
-                        <item xsi:type="xsd:boolean">true</item>
-                        <item xsi:type="xsd:int">3</item>
-                    </item>
-                    <item xsi:type="xsd:string">foo</item>
-                    <item xsi:type="SOAP-ENC:Struct">
-                        <a xsi:type="xsd:int">1</a>
-                        <b xsi:type="xsd:int">2</b>
-                        <c xsi:type="xsd:int">3</c>
-                    </item>
-                </a>
-            </item>
-        </ns:getStdClass>
-    </soapenv:Body>
-</soapenv:Envelope>
+        $requestXml = SoapClientDry::__requestXml($parameters, $method, $this->wsdlFile);
+
+        $expectedRequest = /** @lang XMLs */ <<<EOT
+<SOAP-ENV:Envelope xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <SOAP-ENV:Body>
+        <ns1:getDotNetObject>
+            <params xsi:type="SOAP-ENC:Struct">
+                <aa xsi:type="xsd:int">23</aa>
+                <bb xsi:type="xsd:string">banán</bb>
+                <cc xsi:type="SOAP-ENC:Array" SOAP-ENC:arrayType="xsd:int[3]">
+                      <item xsi:type="xsd:int">77</item>
+                      <item xsi:type="xsd:int">88</item>
+                      <item xsi:type="xsd:int">99</item>
+                </cc>
+            </params>
+        </ns1:getDotNetObject>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
 EOT;
+        $I->assertXmlStringEqualsXmlString($expectedRequest, $requestXml);
 
-        $I->sendSoapRequest($method, $requestXml);
+        $I->sendSoapRequest($method, $parameters, $this->wsdlFile);
         $request = $I->grabSoapRequest();
         codecept_debug("Request=".$request->saveXML());
         /** @noinspection PhpParamsInspection */
@@ -244,7 +246,7 @@ EOT;
         $response = $I->grabSoapResponse();
         codecept_debug("Response=".$response->saveXML());
 
-        $expectedResponse = /** @lang */<<<EOT
+        $expectedResponse = /** @lang XMLs */<<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <SOAP-ENV:Envelope 
             xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" 
@@ -255,30 +257,23 @@ EOT;
         SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
 >
     <SOAP-ENV:Body>
-        <ns1:getStdClassResponse>
+        <ns1:getDotNetObjectResponse>
             <return xsi:type="SOAP-ENC:Struct">
-                <arr xsi:type="SOAP-ENC:Struct">
-                  <a SOAP-ENC:arrayType="xsd:ur-type[3]" xsi:type="SOAP-ENC:Array">
-                    <item SOAP-ENC:arrayType="xsd:string[3]" xsi:type="SOAP-ENC:Array">
-                      <item xsi:type="xsd:string">alma</item>
-                      <item xsi:type="xsd:string">true</item>
-                      <item xsi:type="xsd:string">3</item>
-                    </item>
-                    <item xsi:type="xsd:string">foo</item>
-                    <item xsi:type="SOAP-ENC:Struct">
-                      <a xsi:type="xsd:string">1</a>
-                      <b xsi:type="xsd:string">2</b>
-                      <c xsi:type="xsd:string">3</c>
-                    </item>
-                  </a>
-                </arr>  
+                <getDotNetObjectResult xsi:type="SOAP-ENC:Struct">
+                    <aa xsi:type="xsd:int">23</aa>
+                    <bb xsi:type="xsd:string">banán</bb>
+                    <cc xsi:type="SOAP-ENC:Array" SOAP-ENC:arrayType="xsd:int[3]">
+                          <item xsi:type="xsd:int">77</item>
+                          <item xsi:type="xsd:int">88</item>
+                          <item xsi:type="xsd:int">99</item>
+                    </cc>
+                </getDotNetObjectResult>  
             </return>
-        </ns1:getStdClassResponse>
+        </ns1:getDotNetObjectResponse>
     </SOAP-ENV:Body></SOAP-ENV:Envelope>
 EOT;
 
         /** @noinspection PhpParamsInspection */
         $I->assertXmlStringEqualsXmlString($expectedResponse, $response);
     }
-
 }

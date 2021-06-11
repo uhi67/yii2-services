@@ -73,14 +73,14 @@ class SampleApiController extends Controller
 	}
 
     /**
-     * @param array $params -- associative array
+     * @param object $xxx -- associative array must be declared as object
      * @return object -- use object instead of stdClass
      * @soap
      */
-    public function getObject($params)
+    public function getObject($xxx)
     {
         $object_result = new stdClass();
-        foreach($params as $name=>$value) $object_result->$name = $value;
+        foreach($xxx as $name=> $value) $object_result->$name = $value;
         return $object_result;
     }
 
@@ -119,6 +119,7 @@ class SampleApiController extends Controller
      * Parameters and output wrapped in .net style
      * @param mixed[] $params -- single array parameter holding all user parameters
      * @return object -- result is wrapped into the functionResult field of a stdClass object.
+     * @soap
      */
     public function getDotNetObject($params) {
         return (object)[__FUNCTION__.'Result'=>(object)$params];

@@ -536,8 +536,9 @@ class WsdlGenerator extends Component
 XML;
 
         $dom = new DOMDocument();
-        $dom->formatOutput = true;
         $dom->loadXML($xml);
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
 
         if($opName) {
             $dom->documentElement->setAttribute('opName', $opName);
