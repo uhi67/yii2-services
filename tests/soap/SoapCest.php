@@ -47,7 +47,7 @@ class SoapCest {
         $soapEnvScheme = SOAP::SCHEME_SOAP_ENVELOPE;
 	    $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
 	    $method = 'mirror';
-	    $I->sendSoapRequest($method, '<root><aaa>x</aaa></root>');
+	    $I->sendSoapRequest($method, '<aaa>x</aaa>');
 	    $expectedRequest = <<<EOT
 <soapenv:Envelope xmlns:soapenv="$soapEnvScheme">
 	<soapenv:Header/>
@@ -113,7 +113,9 @@ EOT;
         $I->seeSoapResponseContainsXPath('//ns1:getObjectResponse');
         $expectedResult = /** @lang */ <<<EOT
 <return xsi:type="SOAP-ENC:Struct" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <a xsi:type="xsd:string">x</a><b xsi:type="xsd:string">13</b><c xsi:type="xsd:string">29</c>
+	<params xsi:type="SOAP-ENC:Struct">
+        <a xsi:type="xsd:string">x</a><b xsi:type="xsd:string">13</b><c xsi:type="xsd:string">29</c>
+    </params>
 </return>
 EOT;
         $resultList = XmlAsserts::xmlEval('//ns1:getObjectResponse/return', $response, ['ns1'=>$namespace]);
