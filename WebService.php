@@ -196,7 +196,7 @@ class WebService extends Component
         // Decide if we are testing (prebuild wsdl without webserver)
         $test = Yii::$app->name=='test-api';
         if($test) {
-            $wsdlFile = __DIR__.'/tests/_output/wsdl-'.md5($this->wsdlUrl).'.xml';
+            $wsdlFile = Yii::getAlias('@app/tests/_output/wsdl-'.md5($this->wsdlUrl).'.xml');
             file_put_contents($wsdlFile, $this->generateWsdl());
             $server = new SoapServer($wsdlFile, $this->getOptions());
         }
