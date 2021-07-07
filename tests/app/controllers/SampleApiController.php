@@ -11,6 +11,7 @@ use stdClass;
 use uhi67\services\tests\app\models\SoapModel;
 use uhi67\services\WebServiceAction;
 //use uhi67\services\WsdlGenerator;
+use uhi67\services\WsdlGenerator;
 use yii\web\Controller;
 
 /**
@@ -23,6 +24,8 @@ use yii\web\Controller;
 class SampleApiController extends Controller
 {
     public $enableCsrfValidation = false;
+	public $namespace = 'http://central-api.pte.hu/api/soap/sample-soap';
+	public $serviceName = 'sample-api';
 
     public function actions()
     {
@@ -30,14 +33,16 @@ class SampleApiController extends Controller
             'index' => [
                 'class' => WebServiceAction::class,
 	            'serviceOptions' => [
-	                'actor' => 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl',
-//		            'generatorConfig' =>[
-//		            	'class' => WsdlGenerator::class,
+	                'actor' => $this->namespace,
+		            'generatorConfig' =>[
+		            	'class' => WsdlGenerator::class,
+			            'namespace' => $this->namespace,
+			            'serviceName' => $this->serviceName,
 //					    'operationBodyStyle' => [
 //						    'use' => WsdlGenerator::USE_LITERAL, // Default is USE_ENCODED
 //						    'encodingStyle' => 'http://schemas.xmlsoap.org/soap/encoding/', // Default is 'http://schemas.xmlsoap.org/soap/encoding/'
 //					    ],
-//		            ]
+		            ]
 	            ],
                 'classMap' => [
                     'SoapModel' => SoapModel::class,

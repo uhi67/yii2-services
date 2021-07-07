@@ -43,18 +43,18 @@ class ApiCest
 		$client = new SoapClient($this->wsdl, [
 			'cache_wsdl'=>WSDL_CACHE_NONE,
 			'cache_wsdl_ttl'=>0,
-//            'trace' => true,
+            'trace' => true,
 		]);
 
-		$soapResult = $client->__soapCall($method, ['parameters'=>$param], ['exceptions' => 1]);
+		$soapResult = $client->__soapCall($method, [$param], ['exceptions' => 0]);
         codecept_debug('Result='.print_r($soapResult, true));
 
 		$I->assertFalse(is_soap_fault($soapResult));
         $expected = 13;
 		$I->assertEquals($expected, $soapResult);
 
-//		$response = $client->__getLastResponse();   // turn on trace first
-//        codecept_debug('Response='.print_r($response, true));
+		$response = $client->__getLastResponse();   // turn on trace first
+        codecept_debug('Response='.print_r($response, true));
 
 	}
 

@@ -2,3 +2,13 @@ header.navbar-dark {
     background-color: #199345;
     color: #fff;
 }
+.hidden {
+    display:none;
+}
+#response {
+    white-space: pre;
+    margin-bottom: 4px;
+}
+.error {
+    color: maroon;
+}

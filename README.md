@@ -74,6 +74,12 @@ class MyClass
 }
 ```
 
+## Testing
+
+1. Before testing, run once `composer install` from repository root.
+2. Run `php tests/app/yii serve` if you going to run acceptance tests.  
+2. Run `codecept run` from repository root.
+
 ## License
 
 **uhi67/yii2-services** is released under the BSD License. See the bundled `LICENSE.md` for details.

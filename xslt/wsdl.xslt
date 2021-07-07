@@ -41,6 +41,7 @@
                             integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
                             crossorigin="anonymous"></script>
                 </div>
+                <script type="text/javascript" src="?xslt&amp;f=wsdl.js"/>
             </body>
         </html>
     </xsl:template>
@@ -105,6 +106,26 @@ Content-Length: length
     &lt;/soapenv:Body>
 &lt;/soapenv:Envelope>
         </pre>
+
+        <div id="response-container" class="hidden">
+            <h3>Response</h3>
+            <div id="response"></div>
+        </div>
+        <h3>Test call</h3>
+        <form action="{/wsdl:definitions/@uri}" method="post" enctype="text/xml">
+            <xsl:apply-templates select="wsdl:input" mode="form"/>
+            <pre id="xml-data" style="display:none">
+&lt;soapenv:Envelope xmlns:ns="<xsl:value-of select="/wsdl:definitions/@targetNamespace"/>" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+    &lt;soapenv:Header xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"/>
+    &lt;soapenv:Body xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+        &lt;ns:<xsl:value-of select="@name"/><xsl:text>></xsl:text>
+            <xsl:apply-templates select="wsdl:input" mode="pattern"/>
+        &lt;/ns:<xsl:value-of select="@name"/>>
+    &lt;/soapenv:Body>
+&lt;/soapenv:Envelope>
+            </pre>
+            <button type="button" id="submit">Submit</button>
+        </form>
     </xsl:template>
 
     <xsl:template match="wsdl:input">
@@ -113,10 +134,19 @@ Content-Length: length
         <xsl:apply-templates select="/wsdl:definitions/wsdl:message[@name=concat($name, 'In')]"/>
     </xsl:template>
 
+    <xsl:template match="wsdl:input" mode="form">
+        <xsl:variable name="name" select="../@name" />
+        <xsl:apply-templates select="/wsdl:definitions/wsdl:message[@name=concat($name, 'In')]" mode="input"/>
+    </xsl:template>
+
     <xsl:template match="wsdl:output">
         <xsl:variable name="name" select="../@name" />
         <h3>Output</h3>
         <xsl:apply-templates select="/wsdl:definitions/wsdl:message[@name=concat($name, 'Out')]"/>
+    </xsl:template>
+
+    <xsl:template match="wsdl:message" mode="input">
+        <xsl:apply-templates select="wsdl:part" mode="input" />
     </xsl:template>
 
     <xsl:template match="wsdl:message">
@@ -127,6 +157,13 @@ Content-Length: length
             </tr>
             <xsl:apply-templates select="wsdl:part" />
         </table>
+    </xsl:template>
+
+    <xsl:template match="wsdl:part" mode="input">
+        <div class="form-group row">
+            <label for="input_{@name}" class="col-sm-2"><xsl:value-of select="@name"/></label>
+            <input name="{@name}" id="input_{@name}" class="col-sm-10"/>
+        </div>
     </xsl:template>
 
     <xsl:template match="wsdl:part">
@@ -141,13 +178,27 @@ Content-Length: length
         <xsl:apply-templates select="/wsdl:definitions/wsdl:message[@name=concat($name, 'In')]" mode="sample"/>
     </xsl:template>
 
+    <xsl:template match="wsdl:input" mode="pattern">
+        <xsl:variable name="name" select="../@name" />
+        <xsl:apply-templates select="/wsdl:definitions/wsdl:message[@name=concat($name, 'In')]" mode="pattern"/>
+    </xsl:template>
+
     <xsl:template match="wsdl:message" mode="sample">
         <xsl:apply-templates select="wsdl:part" mode="sample"/>
+    </xsl:template>
+
+    <xsl:template match="wsdl:message" mode="pattern">
+        <xsl:apply-templates select="wsdl:part" mode="pattern"/>
     </xsl:template>
 
     <xsl:template match="wsdl:part" mode="sample">
         <xsl:text>
             &lt;</xsl:text><xsl:value-of select="@name" />><xsl:call-template name="sample"><xsl:with-param name="type" select="@type"/></xsl:call-template>&lt;/<xsl:value-of select="@name" /><xsl:text>></xsl:text>
+    </xsl:template>
+
+    <xsl:template match="wsdl:part" mode="pattern">
+        <xsl:text>
+            &lt;</xsl:text><xsl:value-of select="@name" />>{<xsl:value-of select="@name" />}&lt;/<xsl:value-of select="@name" /><xsl:text>></xsl:text>
     </xsl:template>
 
     <xsl:template name="sample">
