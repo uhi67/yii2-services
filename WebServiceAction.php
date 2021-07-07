@@ -95,6 +95,14 @@ class WebServiceAction extends Action
      */
     public function run()
     {
+	    if(isset($_GET['xslt'])) {
+		    $f = str_replace('..', '.', $_GET['f'] ?? 'wsdl.xslt');
+		    $response = Yii::$app->response;
+		    $response->headers->add('Cache-Control', 'public, max-age=3600, immutable');
+		    $response->sendFile(__DIR__.'/xslt/'.$f);
+		    $response->headers->remove('Content-Disposition');
+		    return $response;
+	    }
         $request = Yii::$app->getRequest();
         $hostInfo = $request instanceof  Request ? $request->getHostInfo() : 'http://localhost';
         $controller = $this->controller;
@@ -116,13 +124,7 @@ class WebServiceAction extends Action
         foreach ($this->serviceOptions as $name => $value) {
             $this->_service->$name = $value;
         }
-        if(isset($_GET['xslt'])) {
-            $f = str_replace('..', '.', $_GET['f'] ?? 'wsdl.xslt');
-            $response = Yii::$app->response;
-            $response->sendFile(__DIR__.'/xslt/'.$f);
-            return $response;
-        }
-        elseif(isset($_GET[$this->serviceVar])) {
+        if(isset($_GET[$this->serviceVar])) {
             $this->_service->run();
             return null;
         } else {
