@@ -17,9 +17,7 @@
                     <xsl:value-of select="definitions/@name"/> Web Service
                 </title>
                 <link rel="stylesheet" href="?xslt&amp;f=wsdl.css"/>
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css"
-                      integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x"
-                      crossorigin="anonymous"/>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"/>
                 <link rel="preconnect" href="https://fonts.gstatic.com"/>
                 <link rel="stylesheet"
                       href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;1,400;1,700&amp;family=Roboto:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap"/>
@@ -42,6 +40,7 @@
                             crossorigin="anonymous"></script>
                 </div>
                 <script type="text/javascript" src="?xslt&amp;f=wsdl.js"/>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
             </body>
         </html>
     </xsl:template>
@@ -107,15 +106,17 @@ Content-Length: length
 &lt;/soapenv:Envelope>
         </pre>
 
-        <div id="response-container" class="hidden">
-            <h3>Response</h3>
-            <div id="response"></div>
-        </div>
         <h3>Test call</h3>
-        <form action="{/wsdl:definitions/@uri}" method="post" enctype="text/xml">
-            <xsl:apply-templates select="wsdl:input" mode="form"/>
-            <pre id="xml-data" style="display:none">
-&lt;soapenv:Envelope xmlns:ns="<xsl:value-of select="/wsdl:definitions/@targetNamespace"/>" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+        <nav>
+        <div id="tab-testcall" class="nav nav-tabs" role="tablist">
+            <button id="xml-tab" class="nav-link active" data-bs-toggle="tab" data-bs-target="#testcall-xml" aria-controls="XML" aria-selected="true" role="tab">XML</button>
+            <button id="fields-tab" class="nav-link" data-bs-toggle="tab" data-bs-target="#testcall-fields" aria-controls="fields" aria-selected="false" role="tab">Field values</button>
+        </div>
+        </nav>
+        <div class="tab-content" id="tab-testcallContent">
+            <div class="tab-pane fade show active" id="testcall-xml" role="tabpanel" aria-labelledby="xml-tab">
+                <form id="form-testcall-xml" action="{/wsdl:definitions/@uri}" method="post" enctype="text/xml">
+                    <textarea id="xml">&lt;soapenv:Envelope xmlns:ns="<xsl:value-of select="/wsdl:definitions/@targetNamespace"/>" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/">
     &lt;soapenv:Header xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"/>
     &lt;soapenv:Body xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
         &lt;ns:<xsl:value-of select="@name"/><xsl:text>></xsl:text>
@@ -123,9 +124,32 @@ Content-Length: length
         &lt;/ns:<xsl:value-of select="@name"/>>
     &lt;/soapenv:Body>
 &lt;/soapenv:Envelope>
-            </pre>
-            <button type="button" id="submit">Submit</button>
-        </form>
+</textarea>
+                    <button type="button" id="submit-xml">Submit</button>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="testcall-fields" role="tabpanel" aria-labelledby="fields-tab">
+                <form id="form-testcall-fields" action="{/wsdl:definitions/@uri}" method="post" enctype="text/xml">
+                    <xsl:apply-templates select="wsdl:input" mode="form"/>
+                    <pre id="xml-data" style="display:none">
+        &lt;soapenv:Envelope xmlns:ns="<xsl:value-of select="/wsdl:definitions/@targetNamespace"/>" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+            &lt;soapenv:Header xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"/>
+            &lt;soapenv:Body xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+                &lt;ns:<xsl:value-of select="@name"/><xsl:text>></xsl:text>
+                    <xsl:apply-templates select="wsdl:input" mode="pattern"/>
+                &lt;/ns:<xsl:value-of select="@name"/>>
+            &lt;/soapenv:Body>
+        &lt;/soapenv:Envelope>
+                    </pre>
+                    <button type="button" id="submit-fields">Submit</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="response-container" class="hidden">
+            <h3>Response</h3>
+            <div id="response"></div>
+        </div>
     </xsl:template>
 
     <xsl:template match="wsdl:input">
@@ -162,7 +186,10 @@ Content-Length: length
     <xsl:template match="wsdl:part" mode="input">
         <div class="form-group row">
             <label for="input_{@name}" class="col-sm-2"><xsl:value-of select="@name"/></label>
-            <input name="{@name}" id="input_{@name}" class="col-sm-10"/>
+            <div class="col-sm-10">
+                <input name="{@name}" id="input_{@name}" class="form-control"/>
+                <div class="help-block"><xsl:value-of select="@type" /></div>
+            </div>
         </div>
     </xsl:template>
 
@@ -198,7 +225,16 @@ Content-Length: length
 
     <xsl:template match="wsdl:part" mode="pattern">
         <xsl:text>
-            &lt;</xsl:text><xsl:value-of select="@name" />>{<xsl:value-of select="@name" />}&lt;/<xsl:value-of select="@name" /><xsl:text>></xsl:text>
+            &lt;</xsl:text><xsl:value-of select="@name" /><xsl:apply-templates select="@type" mode="xtype"/>>{<xsl:value-of select="@name" />}&lt;/<xsl:value-of select="@name" /><xsl:text>></xsl:text>
+    </xsl:template>
+
+    <xsl:template match="@*" mode="xtype">
+        <xsl:text> xsi:type="</xsl:text>
+        <xsl:choose>
+            <xsl:when test=".='soap-enc:Array'">ns2:Map</xsl:when>
+            <xsl:otherwise><xsl:value-of select="."/></xsl:otherwise>
+        </xsl:choose>
+        <xsl:text>"</xsl:text>
     </xsl:template>
 
     <xsl:template name="sample">

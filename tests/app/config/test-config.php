@@ -5,6 +5,7 @@ return [
     'name' => 'test-api',
     'basePath' => dirname(__DIR__),
     'aliases' => [
+    	'@tests' => dirname(dirname(dirname(__DIR__))) . '/tests',
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
     ],
