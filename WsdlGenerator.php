@@ -281,7 +281,7 @@ class WsdlGenerator extends Component
         $comment = strtr($comment, ["\r\n" => "\n", "\r" => "\n"]); // make line endings consistent: win -> unix, mac -> unix
 
         $methodName = $method->getName();
-        $comment = preg_replace('/^\s*\**(\s*?$|\s*)/m', '', $comment);
+        $comment = preg_replace('/^\s*\**(\s*$|\s?)/m', '', $comment);
         $params = $method->getParameters();
         $message = [];
         $headers = [];
@@ -358,8 +358,8 @@ class WsdlGenerator extends Component
         }
 
         // If no @example, Method decription is the bare beginning of the comment
-        if(!$doc &&preg_match('/^\/\*+\s*([^@]*?)\n@/s', $comment, $matches)) {
-            $doc = trim($matches[1]);
+        if(!$doc &&preg_match('/^\/\*+\s?(\s*[^@]*?)\n@/s', $comment, $matches)) {
+            $doc = $matches[1];
             if($doc) $doc.=PHP_EOL;
         }
 
