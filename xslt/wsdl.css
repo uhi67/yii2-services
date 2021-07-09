@@ -17,6 +17,11 @@ header.navbar-dark {
 .error {
     color: maroon;
 }
+.waiting {
+    background-color: lightgrey;
+    color: darkgrey;
+    height:40px;
+}
 .container > form {
     margin-bottom: 1rem;
 }

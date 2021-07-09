@@ -37,7 +37,7 @@ use yii\base\Component;
  * <li>date: maps to xsd:date;</li>
  * <li>time: maps to xsd:time;</li>
  * <li>datetime: maps to xsd:dateTime;</li>
- * <li>array: maps to xsd:string;</li>
+ * <li>array: maps to soap-enc:Array;</li>
  * <li>object: maps to xsd:struct;</li>
  * <li>mixed: maps to xsd:anyType.</li>
  * </ul>
@@ -322,6 +322,12 @@ class WsdlGenerator extends Component
             }
         }
 
+	    $example = '';
+	    $n = preg_match_all('/^@example\s+(.*)$/m', $comment, $matches);
+	    for ($i = 0; $i < $n; ++$i) {
+		    $example .= "\n". $matches[1][$i];
+	    }
+
         if ($headers !== []) {
             $this->messages[$methodName . 'Headers'] = $headers;
             $headerKeys = array_keys($headers);
@@ -351,13 +357,14 @@ class WsdlGenerator extends Component
             $this->messages[$methodName . 'Out'] = ['parameters' => ['element' => 'tns:' . $methodName . 'Response']];
         }
 
+        // Method decription is the bare beginning of the comment
         if (preg_match('/^\/\*+\s*([^@]*?)\n@/s', $comment, $matches)) {
             $doc = trim($matches[1]);
         } else {
             $doc = '';
         }
         $this->operations[$methodName] = [
-            'doc' => $doc,
+            'doc' => $example ? $example : $doc, // TODO: md -> html
             'headers' => $firstHeader===null ? null : ['input' => [$methodName . 'Headers', $firstHeaderKey]],
         ];
     }

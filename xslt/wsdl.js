@@ -3,7 +3,12 @@ const WsdlDoc = (function() {
 
 	const documentLoaded = function (event) {
 		const button = document.querySelector('#form-testcall-fields button#submit-fields');
-		button.addEventListener('click', ()=>{
+		const responseContainer = document.querySelector('div#response-container');
+		const response = responseContainer && responseContainer.querySelector('div#response');
+
+		button && button.addEventListener('click', ()=>{
+			response.className = 'waiting';
+			response.textContent = '...';
 			const form = button.parentElement;
 			const xmlhttp = new XMLHttpRequest();
 			let xml = document.querySelector('pre#xml-data').textContent;
@@ -13,8 +18,6 @@ const WsdlDoc = (function() {
 			// console.log(xml);
 			xmlhttp.onreadystatechange = function() {
 				if (xmlhttp.readyState == 4) {
-					const responseContainer = document.querySelector('div#response-container');
-					const response = responseContainer.querySelector('div#response');
 					if (xmlhttp.status == 200) {
 						//Request was successful
 						// console.log('Success');
@@ -40,22 +43,26 @@ const WsdlDoc = (function() {
 		});
 
 		const button1 = document.querySelector('#form-testcall-xml button#submit-xml');
-		button1.addEventListener('click', ()=>{
+		button1 && button1.addEventListener('click', ()=>{
+			response.className = 'waiting';
+			response.textContent = '';
 			const form = button1.parentElement;
 			const xmlhttp = new XMLHttpRequest();
 			let xml = document.querySelector('textarea#xml').value;
 			xmlhttp.onreadystatechange = function() {
 				if (xmlhttp.readyState == 4) {
-					const responseContainer = document.querySelector('div#response-container');
-					const response = responseContainer.querySelector('div#response');
 					if (xmlhttp.status == 200) {
 						//Request was successful
 						// console.log('Success');
-						// console.log(xmlhttp.responseText);
+						console.log(xmlhttp.responseText);
 						response.className = 'success';
 						const serializer = new XMLSerializer();
-						const xmlStr = serializer.serializeToString(xmlhttp.responseXML);
-						response.textContent = prettifyXml(xmlStr);
+						if(xmlhttp.responseXML) {
+							const xmlStr = serializer.serializeToString(xmlhttp.responseXML);
+							response.textContent = prettifyXml(xmlStr);
+						} else {
+							response.textContent = xmlhttp.responseText;
+						}
 					} else {
 						console.log('Failure', xmlhttp.status);
 						console.log(xmlhttp.response);
