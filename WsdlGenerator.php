@@ -322,10 +322,10 @@ class WsdlGenerator extends Component
             }
         }
 
-	    $example = '';
+	    $doc = "";
 	    $n = preg_match_all('/^@example\s+(.*)$/m', $comment, $matches);
 	    for ($i = 0; $i < $n; ++$i) {
-		    $example .= "\n". $matches[1][$i];
+		    $doc .= $matches[1][$i].PHP_EOL;
 	    }
 
         if ($headers !== []) {
@@ -357,14 +357,14 @@ class WsdlGenerator extends Component
             $this->messages[$methodName . 'Out'] = ['parameters' => ['element' => 'tns:' . $methodName . 'Response']];
         }
 
-        // Method decription is the bare beginning of the comment
-        if (preg_match('/^\/\*+\s*([^@]*?)\n@/s', $comment, $matches)) {
+        // If no @example, Method decription is the bare beginning of the comment
+        if(!$doc &&preg_match('/^\/\*+\s*([^@]*?)\n@/s', $comment, $matches)) {
             $doc = trim($matches[1]);
-        } else {
-            $doc = '';
+            if($doc) $doc.=PHP_EOL;
         }
+
         $this->operations[$methodName] = [
-            'doc' => $example ? $example : $doc, // TODO: md -> html
+            'doc' => $doc,
             'headers' => $firstHeader===null ? null : ['input' => [$methodName . 'Headers', $firstHeaderKey]],
         ];
     }
@@ -656,13 +656,12 @@ XML;
                             $annotation = $dom->createElement('xsd:annotation');
                             if(isset($type[6])) {
                                 $documentation = $dom->createElement('xsd:documentation');
-                                $documentation->textContent = $type[6];
-                                $annotation->appendChild($documentation);
+                                $annotation->appendChild($documentation)->appendChild($dom->createTextNode($type[6]));
+
                             }
                             if(isset($type[5])) {
                                 $appinfo = $dom->createElement('xsd:appinfo');
-                                $appinfo->textContent = $type[5];
-                                $annotation->appendChild($appinfo);
+                                $annotation->appendChild($appinfo)->appendChild($dom->createTextNode($type[5]));
                             }
                             $element->appendChild($annotation);
                         }
@@ -752,7 +751,10 @@ XML;
         $output = $dom->createElement('wsdl:output');
         $output->setAttribute('message', 'tns:' . $name . 'Out');
 
-        $operation->appendChild($dom->createElement('wsdl:documentation', $doc));
+        // TODO: md->html
+        $documentationNode = $operation->appendChild($dom->createElement('wsdl:documentation'));
+		$documentationNode->appendChild($dom->createTextNode($doc));
+
         $operation->appendChild($input);
         $operation->appendChild($output);
 
@@ -856,4 +858,115 @@ XML;
         $service->appendChild($port);
         $dom->documentElement->appendChild($service);
     }
+
+	/**
+	 * Adds XML subtree from DOMElement or DOMDocument or xml string
+	 *
+	 * XML document or xml fragment is supported.
+	 *
+	 * @param DOMElement $element -- node to append content to
+	 * @param string|DOMElement $cont - xml content to insert
+	 * @param boolean $omitroot - omits root node of xml document
+	 *
+	 * @return DOMElement|DOMNode - the (first) inserted node.
+	 * @throws DomException on invalid XML string
+	 */
+	function addXmlContent($element, $cont, $omitroot=false) {
+		if($cont instanceof DOMDocument) {
+			if($omitroot) {
+				/** @var DOMElement $first */
+				$first = null;
+				foreach($cont->documentElement->childNodes as $child) {
+					$inserted = $element->appendChild($element->ownerDocument->importNode($child, true));
+					if(!$first) $first = $inserted;
+				}
+				return $first;
+			}
+			return $element->appendChild($element->ownerDocument->importNode($cont->documentElement, true));
+		}
+		if($cont instanceof DOMElement or $cont instanceof DOMDocumentFragment) {
+			if($omitroot or $cont instanceof DOMDocumentFragment) {
+				/** @var DOMElement $first */
+				$first = null;
+				foreach($cont->childNodes as $child) {
+					$inserted = $element->appendChild($element->ownerDocument->importNode($child, true));
+					if(!$first) $first = $inserted;
+				}
+				return $first;
+			}
+			return $element->appendChild($element->ownerDocument->importNode($cont, true));
+		}
+		if(!is_string($cont)) $cont = $element->ownerDocument->toString($cont);
+		return $this->addHypertextContent($cont, true, !$omitroot);
+	}
+
+	/**
+	 * Adds XML content from a string
+	 * If string is not valid XML, a text node will be created
+	 * If string starts with <?xml, a complete XML document is assumed, and root node may be omitted
+	 * Otherwise the string is decoded as xml fragment, and root node cannot be omitted.
+	 *
+	 * @param DOMElement $element -- node to append content to
+	 * @param string $cont - string xml content to insert. May be xml document (starting with <?xml) or xml fragment (starting with '<')
+	 * @param bool $strict -- throws an DomException on invalid xml string, otherwise inserts as text with (*) mark.
+	 * @param bool $root -- include root node of xml (not used if xml fragment is provided)
+	 * @param string $namespace -- insert/replace default namespace. Does not affect declared prefixed namespaces. Default is none, leaves declared
+	 *
+	 * @return DOMElement|DOMNode - (first) inserted node (may be text node)
+	 * @throws \DOMException
+	 */
+	function addHypertextContent($element, $cont, $strict=false, $root=false, $namespace=null) {
+		if($cont instanceof DOMNode) {
+			return $this->addXmlContent($element, $cont, !$root);
+		}
+		if(is_null($cont)) return null;
+		if(is_numeric($cont)) $cont=(string)$cont;
+		if(!is_string($cont)) $cont = $element->ownerDocument->toString($cont);
+		$dom2 = new DOMDocument();
+		try {
+			$contt = trim($cont);
+			if(substr($contt,0,6)=='<?xml '  and substr($contt,-1)=='>') {
+				$dom2->loadXML($contt);
+				if($root) {
+					return $element->appendChild($element->ownerDocument->importNode($dom2->documentElement, true));
+				}
+				else {
+					$nodex = $dom2->documentElement->firstChild;
+					/** @var DOMElement $first */
+					$first = null;
+					while($nodex) {
+						$inserted = $element->appendChild($element->ownerDocument->importNode($nodex, true));
+						if(!$first) $first = $inserted;
+						$nodex = $nodex->nextSibling;
+					}
+					return $first;
+				}
+			}
+			else if(substr($contt,0,1)=='<' and substr($contt,-1)=='>') {
+				$xmlns = $namespace ? ' xmlns="'.$namespace.'"' : '';
+				$r = @$dom2->loadXML("<?xml version=\"1.0\" encoding=\"UTF-8\" ?><data$xmlns>$contt</data>");
+				if(!$r) @$r = $dom2->loadXML("<?xml version=\"1.0\" encoding=\"ISO-8859-2\" ?><data$xmlns>$contt</data>");
+				if(!$r) {
+					if($strict) throw new DomException('Invalid XML content');
+					return $element->appendChild($element->ownerDocument->createTextNode($cont.' (*)'));
+				}
+				$nodex = $dom2->documentElement->firstChild;
+				/** @var DOMElement $first */
+				$first = null;
+				while($nodex) {
+					$inserted = $element->appendChild($element->ownerDocument->importNode($nodex, true));
+					if(!$first) $first = $inserted;
+					$nodex = $nodex->nextSibling;
+				}
+				return $first;
+			}
+			else {
+				return $element->appendChild($element->ownerDocument->createTextNode($cont));
+			}
+		}
+		catch(DomException $e) {
+			if($strict) throw new DomException('Invalid XML content', null, $e);
+			return $element->appendChild($element->ownerDocument->createTextNode($cont.' (**)'));
+		}
+	}
 }

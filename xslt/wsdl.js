@@ -79,6 +79,14 @@ const WsdlDoc = (function() {
 			console.log(xml);
 			xmlhttp.send(xml);
 		});
+
+		showdown.setFlavor('github');
+		document.querySelectorAll('pre.markdown').forEach(function(value){
+			const converter = new showdown.Converter({
+				simpleLineBreaks: false
+			});
+			value.outerHTML = converter.makeHtml(value.textContent);
+		});
 	};
 
 	if (document.readyState === 'loading') {

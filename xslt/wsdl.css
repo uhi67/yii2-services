@@ -43,3 +43,7 @@ textarea#xml {
 #form-testcall-fields label {
     font-weight: bold;
 }
+.summary {
+    font-size: small;
+    font-style: italic;
+}
