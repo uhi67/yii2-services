@@ -14,6 +14,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use yii\base\Component;
+use yii\helpers\Url;
 
 /**
  * WsdlGenerator generates the WSDL (1.0) for a given service class.
@@ -530,9 +531,10 @@ class WsdlGenerator extends Component
     protected function buildDOM($serviceUrl, $encoding="UTF-8", $xslt=null, $opName=null)
     {
         $pi = $xslt ? '<?xml-stylesheet type="text/xsl" href="'.$xslt.'"?>'."\n" : '';
+		$wsdlUrl = dirname(Url::current(['doc'=>null, 'ws'=>null], true));
         $xml = /** @lang */<<<XML
 <?xml version="1.0" encoding="$encoding"?>$pi
-<definitions name="$this->serviceName" targetNamespace="$this->namespace"
+<definitions name="$this->serviceName" targetNamespace="$this->namespace" serviceUrl="$serviceUrl" wsdlUrl="$wsdlUrl"
     xmlns="http://schemas.xmlsoap.org/wsdl/"
     xmlns:tns="$this->namespace"
     xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"

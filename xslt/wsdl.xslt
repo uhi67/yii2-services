@@ -49,6 +49,10 @@
     <xsl:template match="wsdl:definitions[not(@opName)]">
         <h3>Service documentation</h3>
         <dl>
+            <dt>WSDL</dt>
+            <dd>
+                <a href="{@wsdlUrl}" target="_blank"><xsl:value-of select="@wsdlUrl"/></a>
+            </dd>
             <dt>Target namespace</dt>
             <dd>
                 <xsl:value-of select="@targetNamespace"/>
