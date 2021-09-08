@@ -251,6 +251,7 @@ class WebService extends Component
                 }
             } else {
                 $server->handle($request);
+                Yii::$app->response->isSent = true;
             }
         } catch (\Throwable $e) {
             // non-PHP error
