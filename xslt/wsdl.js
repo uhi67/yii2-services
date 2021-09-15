@@ -54,7 +54,7 @@ const WsdlDoc = (function() {
 					if (xmlhttp.status == 200) {
 						//Request was successful
 						// console.log('Success');
-						console.log(xmlhttp.responseText);
+						// console.log(xmlhttp.responseText);
 						response.className = 'success';
 						const serializer = new XMLSerializer();
 						if(xmlhttp.responseXML) {
@@ -76,7 +76,7 @@ const WsdlDoc = (function() {
 			}
 			xmlhttp.open("POST", form.action);
 			xmlhttp.setRequestHeader('Content-Type', 'text/xml');
-			console.log(xml);
+			// console.log(xml);
 			xmlhttp.send(xml);
 		});
 
@@ -98,7 +98,8 @@ const WsdlDoc = (function() {
 	const prettifyXml = function(sourceXml) {
 		var xmlDoc = new DOMParser().parseFromString(sourceXml, 'application/xml');
 		var xsltDoc = new DOMParser().parseFromString([
-			'<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
+			'<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">',
+			'  <xsl:output indent="yes"/>',	// Notsupported in Firefox!
 			'  <xsl:strip-space elements="*"/>',
 			'  <xsl:template match="para[content-style][not(text())]">', // change to just text() to strip space in text nodes
 			'    <xsl:value-of select="normalize-space(.)"/>',
@@ -106,7 +107,6 @@ const WsdlDoc = (function() {
 			'  <xsl:template match="node()|@*">',
 			'    <xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>',
 			'  </xsl:template>',
-			'  <xsl:output indent="yes"/>',
 			'</xsl:stylesheet>',
 		].join('\n'), 'application/xml');
 
