@@ -49,14 +49,14 @@ class SoapCest {
 	    $method = 'mirror';
 	    $I->sendSoapRequest($method, '<aaa>x</aaa>');
 	    $expectedRequest = <<<EOT
-<soapenv:Envelope xmlns:soapenv="$soapEnvScheme">
-	<soapenv:Header/>
-	<soapenv:Body>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="$soapEnvScheme">
+	<SOAP-ENV:Header/>
+	<SOAP-ENV:Body>
 		<ns:$method xmlns:ns="$namespace">
 			<aaa>x</aaa>
 		</ns:$method>
-	</soapenv:Body>
-</soapenv:Envelope>
+	</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
 EOT;
 	    $request = $I->grabSoapRequest();
 	    $I->assertXmlStringEqualsXmlString($expectedRequest, $request->saveXML());
@@ -83,9 +83,9 @@ EOT;
 	    $response = $I->grabSoapResponse(); // Only the corrected SOAP module delivers the result.
 	    codecept_debug('Response='.$response->saveXML());
 	    $I->seeSoapResponseContainsXPath("//*[local-name()='Envelope']"); // Ignore NS
-	    $I->seeSoapResponseContainsXPath('//SOAP-ENV:Envelope/SOAP-ENV:Body');
-	    $I->cantSeeSoapResponseContainsXPath('//SOAP-ENV:Envelope/SOAP-ENV:Body/SOAP-ENV:Fault');
-	    $I->seeSoapResponseContainsXPath('//ns1:mirrorResponse');
+	    $I->seeSoapResponseContainsXPath('//SOAP-ENV:Envelope/SOAP-ENV:Body', ['SOAP-ENV'=>$soapEnvScheme]);
+	    $I->cantSeeSoapResponseContainsXPath('//SOAP-ENV:Envelope/SOAP-ENV:Body/SOAP-ENV:Fault', ['SOAP-ENV'=>$soapEnvScheme]);
+	    $I->seeSoapResponseContainsXPath('//ns1:mirrorResponse', ['ns1'=>$namespace]);
         $I->seeSoapResponseContainsXPath("//return[text()='x']");
     }
 
@@ -110,7 +110,7 @@ EOT;
         $I->assertEquals($namespace, $responseNode->namespaceURI);
 
         // Check response structure
-        $I->seeSoapResponseContainsXPath('//ns1:getObjectResponse');
+        $I->seeSoapResponseContainsXPath('//ns1:getObjectResponse', ['ns1'=>$namespace]);
         $expectedResult = /** @lang */ <<<EOT
 <return xsi:type="SOAP-ENC:Struct" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<params xsi:type="SOAP-ENC:Struct">
@@ -150,7 +150,7 @@ EOT;
 
         $response = $I->grabSoapResponse(); // Only the corrected SOAP module delivers the result.
         codecept_debug('Response='.$response->saveXML());
-        $I->seeSoapResponseContainsXPath('//ns1:getObject2Response');
+        $I->seeSoapResponseContainsXPath('//ns1:getObject2Response', ['ns1'=>$namespace]);
 
         $expectedResult = /** @lang */<<<EOT
 <return xsi:type="ns1:MyObject" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">

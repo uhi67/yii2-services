@@ -1,6 +1,7 @@
-Web Service for Yii2 framework
-=================
-[![Build Status](https://travis-ci.org/uhi67/yii2-services.svg?branch=master)](https://travis-ci.org/uhi67/yii2-services)
+SOAP Web Service for Yii2 framework
+===================================
+
+_Version 1.5_
 
 ## Description
 
@@ -9,10 +10,7 @@ Adaptation of Yii1 Web Services
 
 Based on work of Qiang Xue <qiang.xue@gmail.com> and Andrey Borodulin
 
-Changes in version 1.4.2
-
-- corrections for codeception functional testing and some test examples
-- online API documentation with `?doc` query 
+Change log is below
 
 ## Installation
 
@@ -21,12 +19,12 @@ The preferred way to install this extension is through [composer](http://getcomp
 To install, either run
 
 ```
-$ php composer.phar require uhi67/yii2-services "*"
+$ php composer.phar require uhi67/yii2-soap-server "^1.5"
 ```
 or add
 
 ```
-"uhi67/yii2-services": "*"
+"uhi67/yii2-soap-server": "^1.5"
 ```
 
 to the ```require``` section of your `composer.json` file.
@@ -77,9 +75,17 @@ class MyClass
 ## Testing
 
 1. Before testing, run once `composer install` from repository root.
-2. Run `php tests/app/yii serve` if you going to run acceptance tests.  
-2. Run `codecept run` from repository root.
+2. Run `php tests/app/yii serve` if you're going to run acceptance tests.  
+3. Run `codecept run` from repository root.
 
 ## License
 
-**uhi67/yii2-services** is released under the BSD License. See the bundled `LICENSE.md` for details.
+**uhi67/yii2-soap-server** is released under the BSD License. See the bundled `LICENSE.md` for details.
+
+## Change log
+
+### 1.5
+
+- corrections for codeception functional testing and some test examples
+- online API documentation with `?doc` query 
+
