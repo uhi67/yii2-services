@@ -24,7 +24,7 @@ use yii\web\Controller;
 class SampleApiController extends Controller
 {
     public $enableCsrfValidation = false;
-	public $namespace = 'http://central-api.pte.hu/api/soap/sample-soap';
+	public $namespace = 'urn:uhi67/services/tests/app/controllers/SampleApiControllerwsdl';
 	public $serviceName = 'sample-api';
 
     public function actions()
