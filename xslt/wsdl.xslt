@@ -39,6 +39,7 @@
                             integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
                             crossorigin="anonymous"></script>
                 </div>
+                <script type="text/javascript" src="?xslt&amp;f=showdown.js"/>
                 <script type="text/javascript" src="?xslt&amp;f=wsdl.js"/>
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
             </body>
@@ -48,6 +49,10 @@
     <xsl:template match="wsdl:definitions[not(@opName)]">
         <h3>Service documentation</h3>
         <dl>
+            <dt>WSDL</dt>
+            <dd>
+                <a href="{@wsdlUrl}" target="_blank"><xsl:value-of select="@wsdlUrl"/></a>
+            </dd>
             <dt>Target namespace</dt>
             <dd>
                 <xsl:value-of select="@targetNamespace"/>
@@ -68,7 +73,7 @@
         <li>
             <b><a href="?doc&amp;o={@name}"><xsl:value-of select="@name"/></a></b>
             <xsl:if test="wsdl:documentation!=''">
-                <p><i><xsl:value-of select="wsdl:documentation"/></i></p>
+                <p class="summary"><xsl:value-of select="substring-before(wsdl:documentation, '&#10;')"/></p>
             </xsl:if>
         </li>
     </xsl:template>
@@ -86,7 +91,7 @@
     <xsl:template match="wsdl:operation" mode="details">
         <h2><xsl:value-of select="@name"/></h2>
         <xsl:if test="wsdl:documentation!=''">
-            <p><i><xsl:value-of select="wsdl:documentation"/></i></p>
+            <div class="showdown"><pre class="markdown"><xsl:value-of select="wsdl:documentation"/></pre></div>
         </xsl:if>
         <xsl:apply-templates select="wsdl:input|wsdl:output"/>
         <h3>Sample request</h3>

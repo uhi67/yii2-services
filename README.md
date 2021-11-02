@@ -1,6 +1,8 @@
 SOAP Web Service for Yii2 framework
 ===================================
 
+_Version 1.5_
+
 ## Description
 
 WebService encapsulates SoapServer and provides a WSDL-based web service.

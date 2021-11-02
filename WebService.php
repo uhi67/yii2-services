@@ -251,8 +251,9 @@ class WebService extends Component
                 }
             } else {
                 $server->handle($request);
+                Yii::$app->response->isSent = true;
             }
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             // non-PHP error
             if ($e->getCode() !== self::SOAP_ERROR) {
                 // only log for non-PHP-error case because application's error handler already logs it

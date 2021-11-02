@@ -55,6 +55,8 @@ class SampleApiController extends Controller
     /**
      * Write the description of the operation into the phpdoc comment block of the controller method.
      *
+     * The first line is the summary displayed in the **method list**, the rest is markdown-formatted documentation displayed on *method* page.
+     *
      * @param string $a
      * @return string
      * @soap

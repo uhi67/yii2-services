@@ -14,6 +14,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use yii\base\Component;
+use yii\helpers\Url;
 
 /**
  * WsdlGenerator generates the WSDL (1.0) for a given service class.
@@ -37,7 +38,7 @@ use yii\base\Component;
  * <li>date: maps to xsd:date;</li>
  * <li>time: maps to xsd:time;</li>
  * <li>datetime: maps to xsd:dateTime;</li>
- * <li>array: maps to xsd:string;</li>
+ * <li>array: maps to soap-enc:Array;</li>
  * <li>object: maps to xsd:struct;</li>
  * <li>mixed: maps to xsd:anyType.</li>
  * </ul>
@@ -281,7 +282,7 @@ class WsdlGenerator extends Component
         $comment = strtr($comment, ["\r\n" => "\n", "\r" => "\n"]); // make line endings consistent: win -> unix, mac -> unix
 
         $methodName = $method->getName();
-        $comment = preg_replace('/^\s*\**(\s*?$|\s*)/m', '', $comment);
+        $comment = preg_replace('/^\s*\**(\s*$|\s?)/m', '', $comment);
         $params = $method->getParameters();
         $message = [];
         $headers = [];
@@ -322,6 +323,12 @@ class WsdlGenerator extends Component
             }
         }
 
+	    $doc = "";
+	    $n = preg_match_all('/^@example\s+(.*)$/m', $comment, $matches);
+	    for ($i = 0; $i < $n; ++$i) {
+		    $doc .= $matches[1][$i].PHP_EOL;
+	    }
+
         if ($headers !== []) {
             $this->messages[$methodName . 'Headers'] = $headers;
             $headerKeys = array_keys($headers);
@@ -351,11 +358,12 @@ class WsdlGenerator extends Component
             $this->messages[$methodName . 'Out'] = ['parameters' => ['element' => 'tns:' . $methodName . 'Response']];
         }
 
-        if (preg_match('/^\/\*+\s*([^@]*?)\n@/s', $comment, $matches)) {
-            $doc = trim($matches[1]);
-        } else {
-            $doc = '';
+        // If no @example, Method decription is the bare beginning of the comment
+        if(!$doc &&preg_match('/^\/\*+\s?(\s*[^@]*?)\n@/s', $comment, $matches)) {
+            $doc = $matches[1];
+            if($doc) $doc.=PHP_EOL;
         }
+
         $this->operations[$methodName] = [
             'doc' => $doc,
             'headers' => $firstHeader===null ? null : ['input' => [$methodName . 'Headers', $firstHeaderKey]],
@@ -523,9 +531,10 @@ class WsdlGenerator extends Component
     protected function buildDOM($serviceUrl, $encoding="UTF-8", $xslt=null, $opName=null)
     {
         $pi = $xslt ? '<?xml-stylesheet type="text/xsl" href="'.$xslt.'"?>'."\n" : '';
+		$wsdlUrl = dirname(Url::current(['doc'=>null, 'ws'=>null], true));
         $xml = /** @lang */<<<XML
 <?xml version="1.0" encoding="$encoding"?>$pi
-<definitions name="$this->serviceName" targetNamespace="$this->namespace"
+<definitions name="$this->serviceName" targetNamespace="$this->namespace" serviceUrl="$serviceUrl" wsdlUrl="$wsdlUrl"
     xmlns="http://schemas.xmlsoap.org/wsdl/"
     xmlns:tns="$this->namespace"
     xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
@@ -649,13 +658,12 @@ XML;
                             $annotation = $dom->createElement('xsd:annotation');
                             if(isset($type[6])) {
                                 $documentation = $dom->createElement('xsd:documentation');
-                                $documentation->textContent = $type[6];
-                                $annotation->appendChild($documentation);
+                                $annotation->appendChild($documentation)->appendChild($dom->createTextNode($type[6]));
+
                             }
                             if(isset($type[5])) {
                                 $appinfo = $dom->createElement('xsd:appinfo');
-                                $appinfo->textContent = $type[5];
-                                $annotation->appendChild($appinfo);
+                                $annotation->appendChild($appinfo)->appendChild($dom->createTextNode($type[5]));
                             }
                             $element->appendChild($annotation);
                         }
@@ -745,7 +753,10 @@ XML;
         $output = $dom->createElement('wsdl:output');
         $output->setAttribute('message', 'tns:' . $name . 'Out');
 
-        $operation->appendChild($dom->createElement('wsdl:documentation', $doc));
+        // TODO: md->html
+        $documentationNode = $operation->appendChild($dom->createElement('wsdl:documentation'));
+		$documentationNode->appendChild($dom->createTextNode($doc));
+
         $operation->appendChild($input);
         $operation->appendChild($output);
 
